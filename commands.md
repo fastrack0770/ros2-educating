@@ -11,9 +11,14 @@ Command for simple run:
 `ros2 run udemy_ros2_pkg publisher`
 Form is `ros2 run`, next package name, next node name(?)
 
-
 Command for run with debug info (using gdb server)
 `ros2 run --prefix 'gdbserver localhost:3000' udemy_ros2_pkg publisher`
+
+Command for run with debug output (all output):
+`ros2 run udemy_ros2_pkg publisher --ros-args --log-level debug`
+
+Command for run with debug output (only one node):
+`ros2 run udemy_ros2_pkg publisher --ros-args --log-level hello_world_sub_node:=debug`
 
 Command for create package
 `ros2 pkg create $1 --build-type ament_cmake`

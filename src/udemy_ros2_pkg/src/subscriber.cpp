@@ -7,9 +7,9 @@ class HelloWorldSubNode : public rclcpp::Node
 public:
     HelloWorldSubNode() : Node("hello_world_pub_node")
     {
-        const auto callback = [](const std_msgs::msg::String & msg)
+        const auto callback = [this](const std_msgs::msg::String & msg)
         {
-            std::cout << msg.data << std::endl;
+            RCLCPP_INFO(get_logger(), msg.data.c_str());
         };
 
         _subscription = create_subscription<std_msgs::msg::String>(
