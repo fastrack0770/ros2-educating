@@ -19,9 +19,17 @@ ament_target_dependencies(publisher rclcpp std_msgs)
 add_executable(subscriber src/subscriber.cpp)
 ament_target_dependencies(subscriber rclcpp std_msgs)
 
+add_executable(rpm_publisher src/rpm_publisher.cpp)
+ament_target_dependencies(rpm_publisher rclcpp std_msgs)
+
+add_executable(speed_publisher src/speed_publisher.cpp)
+ament_target_dependencies(speed_publisher rclcpp std_msgs)
+
 install(TARGETS
   publisher
   subscriber
+  rpm_publisher
+  speed_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
 

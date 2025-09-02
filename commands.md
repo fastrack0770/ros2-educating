@@ -22,3 +22,10 @@ Command for run with debug output (only one node):
 
 Command for create package
 `ros2 pkg create $1 --build-type ament_cmake`
+
+`ros2 topic list` - to see topic where data is going right now
+`ros2 topic echo /topic_name` - to see data in the topic
+
+`ros2 param list` - to see params for all nodes that is running
+`ros2 param get /node_name param_name` - to see what value is in the param
+`ros2 param set /node_name param_name value` - to place new value in the param. Note that a type must match to that in the parameter
