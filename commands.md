@@ -29,3 +29,5 @@ Command for create package
 `ros2 param list` - to see params for all nodes that is running
 `ros2 param get /node_name param_name` - to see what value is in the param
 `ros2 param set /node_name param_name value` - to place new value in the param. Note that a type must match to that in the parameter
+
+`ros2 launch package_name launch_file_name` - to run launch file for package
