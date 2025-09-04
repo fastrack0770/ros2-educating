@@ -9,6 +9,17 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
+# Generate custom interfaces
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/OddEvenCheck.srv"
+  ADD_LINTER_TESTS
+)
+
+# Get support for using custom interfaces
+rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -25,11 +36,22 @@ ament_target_dependencies(rpm_publisher rclcpp std_msgs)
 add_executable(speed_publisher src/speed_publisher.cpp)
 ament_target_dependencies(speed_publisher rclcpp std_msgs)
 
+add_executable(service_server src/service_server.cpp)
+ament_target_dependencies(service_server rclcpp std_msgs)
+
+add_executable(service_client src/service_client.cpp)
+ament_target_dependencies(service_client rclcpp std_msgs)
+
+target_link_libraries(service_server "${cpp_typesupport_target}")
+target_link_libraries(service_client "${cpp_typesupport_target}")
+
 install(TARGETS
   publisher
   subscriber
   rpm_publisher
   speed_publisher
+  service_server
+  service_client
   DESTINATION lib/${PROJECT_NAME}
 )
 

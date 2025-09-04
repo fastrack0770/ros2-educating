@@ -1,0 +1,6 @@
+# Example of service
+# Request
+int64 number # Number to check Odd or Even
+---
+# Response
+string decision # Odd or Even
