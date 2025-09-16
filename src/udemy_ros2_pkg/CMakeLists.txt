@@ -10,10 +10,15 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 # Generate custom interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/OddEvenCheck.srv"
+  "srv/Turn.srv"
+  DEPENDENCIES builtin_interfaces std_msgs sensor_msgs
   ADD_LINTER_TESTS
 )
 
@@ -45,6 +50,15 @@ ament_target_dependencies(service_client rclcpp std_msgs)
 target_link_libraries(service_server "${cpp_typesupport_target}")
 target_link_libraries(service_client "${cpp_typesupport_target}")
 
+add_executable(turn_service_server src/turn_service_server.cpp)
+ament_target_dependencies(turn_service_server rclcpp sensor_msgs OpenCV cv_bridge)
+
+add_executable(turn_service_client src/turn_service_client.cpp)
+ament_target_dependencies(turn_service_client rclcpp sensor_msgs OpenCV cv_bridge)
+
+target_link_libraries(turn_service_server "${cpp_typesupport_target}")
+target_link_libraries(turn_service_client "${cpp_typesupport_target}")
+
 install(TARGETS
   publisher
   subscriber
@@ -52,6 +66,8 @@ install(TARGETS
   speed_publisher
   service_server
   service_client
+  turn_service_server
+  turn_service_client
   DESTINATION lib/${PROJECT_NAME}
 )
 

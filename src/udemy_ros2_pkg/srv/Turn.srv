@@ -1,0 +1,9 @@
+# Turn service
+# Command to turn camera to a specified angle
+# After achieving the goal, service will return a response
+
+# Request
+float64 angle # Angle to turn in
+---
+# Response
+sensor_msgs/Image image # Image at the specified angle
