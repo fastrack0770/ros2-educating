@@ -1,6 +1,7 @@
 # Example of service
+# OddEvenCheck service - answers whether the number is odd or even
 # Request
-int64 number # Number to check Odd or Even
+int64 number # Number to check if it's odd or even
 ---
 # Response
-string decision # Odd or Even
+string decision # "Odd" or "Even"

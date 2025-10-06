@@ -52,6 +52,7 @@ def generate_launch_description():
             ),
             # Actually doesnt work. There are three copies of Node above that are created, and OnProcessExist kills only one of them
             # Btw if stop the simulation by Ctrl+C, all three copies will stop gracefully
+            # Reference to issue: https://github.com/fastrack0770/ros2-educating/issues/1
             RegisterEventHandler(
                 event_handler=OnProcessExit(
                     target_action=simulation, on_exit=[EmitEvent(event=Shutdown())]
