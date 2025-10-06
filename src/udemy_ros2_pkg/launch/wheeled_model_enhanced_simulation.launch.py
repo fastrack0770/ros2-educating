@@ -20,7 +20,7 @@ from launch.events import Shutdown
 ignition_ros_package_path = get_package_share_directory("ros_ign_gazebo")
 udemy_ros2_pkg_path = get_package_share_directory("udemy_ros2_pkg")
 simulation_world_file_path = Path(
-    udemy_ros2_pkg_path, "worlds", "wheel_model_enhanced_world.sdf"
+    udemy_ros2_pkg_path, "worlds", "wheeled_model_enhanced_world.sdf"
 )
 simulation_models_file_path = Path(udemy_ros2_pkg_path, "models")
 
@@ -40,12 +40,12 @@ def generate_launch_description():
                 package="ros_ign_bridge",
                 executable="parameter_bridge",
                 arguments=[
-                    "/model/wheel_model_enhanced/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist",
+                    "/model/wheeled_model_enhanced/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist",
                     "/camera@sensor_msgs/msg/Image[ignition.msgs.Image",
                     "/camera_pos_cmd@std_msgs/msg/Float64@ignition.msgs.Double",
                 ],
                 remappings=[
-                    ("/model/wheel_model_enhanced/cmd_vel", "cmd_vel"),
+                    ("/model/wheeled_model_enhanced/cmd_vel", "cmd_vel"),
                     ("/camera", "/camera/image_raw"),
                 ],
                 output="screen",

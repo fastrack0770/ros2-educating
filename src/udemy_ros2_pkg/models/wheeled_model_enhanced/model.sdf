@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
 <sdf version='1.7'>
-  <model name='wheel_model_enhanced'>
+  <model name='wheeled_model_enhanced'>
     <link name='base_link'>
       <inertial>
         <mass>1</mass>
