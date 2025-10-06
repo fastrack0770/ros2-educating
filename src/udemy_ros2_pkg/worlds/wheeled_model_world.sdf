@@ -1,3 +1,4 @@
+<!-- World, created during the education. Contains only sun, ground plane and targeted model -->
 <sdf version="1.7">
     <world name="test_world">
         <plugin filename="ignition-gazebo-physics-system" name="gz::sim::systems::Physics">

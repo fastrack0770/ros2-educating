@@ -1,3 +1,4 @@
+<!-- World created for education purposes. Contains only sun, ground plane and camera sensor -->
 <sdf version="1.7">
     <world name="test_world">
         <plugin filename="ignition-gazebo-physics-system" name="gz::sim::systems::Physics">
@@ -15,11 +16,6 @@
                 https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun
             </uri>
         </include>
-        <!-- <include>
-            <uri>
-                https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane
-            </uri>
-        </include> -->
         <include>
             <uri>
                 ground_plane
