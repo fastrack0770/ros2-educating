@@ -40,20 +40,17 @@ def generate_launch_description():
                 package="ros_ign_bridge",
                 executable="parameter_bridge",
                 arguments=[
-                    "/model/wheel_model_enhanced/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist"
+                    "/model/wheel_model_enhanced/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist",
+                    "/camera@sensor_msgs/msg/Image[ignition.msgs.Image",
                 ],
-                remappings=[("/model/wheel_model_enhanced/cmd_vel", "cmd_vel")],  # Remapping
+                remappings=[
+                    ("/model/wheel_model_enhanced/cmd_vel", "cmd_vel"),
+                    ("/camera", "/camera/image_raw"),
+                ],
                 output="screen",
             ),
-            Node(
-                package="ros_ign_bridge",
-                executable="parameter_bridge",
-                arguments=[
-                    "/camera@sensor_msgs/msg/Image[ignition.msgs.Image"
-                ],
-                remappings=[("/camera", "/camera/image_raw")],  # Remapping
-                output="screen",
-            ),
+            # Actually doesnt work. There are three copies of Node above that are created, and OnProcessExist kills only one of them
+            # Btw if stop the simulation by Ctrl+C, all three copies will stop gracefully
             RegisterEventHandler(
                 event_handler=OnProcessExit(
                     target_action=simulation, on_exit=[EmitEvent(event=Shutdown())]
