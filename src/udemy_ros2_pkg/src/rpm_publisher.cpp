@@ -5,7 +5,11 @@
 using namespace std::chrono_literals;
 
 static constexpr double RPM_DEFAULT_VALUE = 10;
-
+/**
+ * RpmPubNode
+ * 
+ * Created for an education purpose based on publisher node (publisher.cpp)
+ */
 class RpmPubNode : public rclcpp::Node
 {
 public:

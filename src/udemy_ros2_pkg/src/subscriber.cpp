@@ -2,6 +2,11 @@
 #include "std_msgs/msg/string.hpp"
 #include <chrono>
 
+/**
+ * HelloWorldSubNode
+ * 
+ * Example of a subscriber node based on ros2 subscriber demo
+ */
 class HelloWorldSubNode : public rclcpp::Node
 {
 public:
