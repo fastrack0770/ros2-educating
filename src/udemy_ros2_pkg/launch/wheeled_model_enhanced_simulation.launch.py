@@ -43,6 +43,7 @@ def generate_launch_description():
                     "/model/wheeled_model_enhanced/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist",
                     "/camera@sensor_msgs/msg/Image[ignition.msgs.Image",
                     "/camera_pos_cmd@std_msgs/msg/Float64@ignition.msgs.Double",
+                    "/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU"
                 ],
                 remappings=[
                     ("/model/wheeled_model_enhanced/cmd_vel", "cmd_vel"),
