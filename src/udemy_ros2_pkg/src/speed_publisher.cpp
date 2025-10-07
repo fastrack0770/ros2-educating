@@ -5,6 +5,12 @@
 
 static constexpr double WHEEL_RADIUS_DEFAULT_VALUE = 0.15;
 
+/**
+ * SpeedPubNode
+ * 
+ * Created based on the publisher node (publisher.cpp) and subscriber node (subscriber.cpp).  
+ * Waits for a rpm message from a "rpm" topic, calculates a speed and send it to a "speed" topic
+ */
 class SpeedPubNode : public rclcpp::Node
 {
 public:

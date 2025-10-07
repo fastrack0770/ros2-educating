@@ -7,6 +7,18 @@ using NavigateAction = udemy_ros2_pkg::action::Navigate;
 using GoalHandle = rclcpp_action::ClientGoalHandle<NavigateAction>;
 using Point = geometry_msgs::msg::Point;
 
+/**
+ * NavigateActionClientNode
+ * 
+ * Example of an action client. Do one goal, after that exit.  
+ * How does it work:
+ * 1. Wait for a goal (x, y, z) to be entered
+ * 2. Wait for a server
+ * 3. Send the goal
+ * 4. Wait for a result. So far there are two variants - goal was whether accepted or rejected
+ * 5. If the goal was accepted, interpret the result, whether goal was accomplished, aborted/canceled or unknown.
+ * 6. Shutdown
+ */
 class NavigateActionClientNode : public rclcpp::Node
 {
 public:

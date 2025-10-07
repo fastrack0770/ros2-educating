@@ -10,6 +10,17 @@ using Point = geometry_msgs::msg::Point;
 // Close enough to the goal
 const auto DIST_THRESHOLD = 0.5;
 
+/**
+ * NavigateActionServerNode
+ * 
+ * Example of an action server.  
+ * How does it work:
+ * 1. Accept a goal
+ * 2. Fake a process of a goal accomplishing. 
+ * Accomplishing can be realized by sending a robot position to a "robot_position" topic using ros2 standart commands
+ * 3. Process the goal canceling
+ * 4. Sending a result after the goal accomplishing
+ */
 class NavigateActionServerNode : public rclcpp::Node
 {
 public:

@@ -4,6 +4,11 @@
 
 using namespace std::chrono_literals;
 
+/**
+ * HelloWorldPubNode
+ * 
+ * Example of publisher based on ros2 demo publisher
+ */
 class HelloWorldPubNode : public rclcpp::Node
 {
 public:

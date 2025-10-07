@@ -2,6 +2,9 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
 
+# Launching rpm and speed nodes
+# rpm - sending rpm info
+# speed - calculating speed from rpm info and sending speed info
 def generate_launch_description():
     return LaunchDescription([
         Node(

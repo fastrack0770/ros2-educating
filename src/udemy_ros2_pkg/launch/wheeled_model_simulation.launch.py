@@ -24,6 +24,9 @@ simulation_world_file_path = Path(
 )
 simulation_models_file_path = Path(udemy_ros2_pkg_path, "models")
 
+# Example of creating simulation by using IncludeLaunchDescription.
+# Seems do not work with OnProcessExit
+
 # simulation = IncludeLaunchDescription(
 #     PythonLaunchDescriptionSource(
 #         launch_file_path=Path(

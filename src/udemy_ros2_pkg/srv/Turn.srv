@@ -3,7 +3,7 @@
 # After achieving the goal, service will return a response
 
 # Request
-float64 angle # Angle to turn in
+float64 angle # Angle to turn at
 ---
 # Response
 sensor_msgs/Image image # Image at the specified angle

@@ -5,6 +5,15 @@
 
 using OddEvenCheck = udemy_ros2_pkg::srv::OddEvenCheck;
 
+/**
+ * Service client example.
+ * How does it work:
+ * 1. Connect to server
+ * 2. Wait for an input
+ * 3. Send a message to server
+ * 4. Wait for a response
+ * 5. Output a result
+ */
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);

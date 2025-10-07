@@ -3,6 +3,14 @@
 
 using OddEvenCheck = udemy_ros2_pkg::srv::OddEvenCheck;
 
+/**
+ * OddEvenCheckServiceNode
+ * 
+ * Example of a service node.
+ * How does it work:
+ * 1. Wait for a message
+ * 2. Send a result if a number is even or ode
+ */
 class OddEvenCheckServiceNode : public rclcpp::Node
 {
 public:

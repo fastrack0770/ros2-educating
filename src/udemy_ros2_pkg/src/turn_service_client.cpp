@@ -8,6 +8,9 @@
 
 using Turn = udemy_ros2_pkg::srv::Turn;
 
+/**
+ * Turn service client based on an example created for an education purpose (service_client.cpp) 
+ */
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);

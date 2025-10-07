@@ -6,6 +6,13 @@
 
 using Turn = udemy_ros2_pkg::srv::Turn;
 
+/**
+ * TurnServiceNode
+ * 
+ * Service server created based on a service server example (service_server.cpp).
+ * Waits for an angle from a "turn" topic.  
+ * Then send a result (downloaded picture).  
+ */
 class TurnServiceNode : public rclcpp::Node
 {
 public:

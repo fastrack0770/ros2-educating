@@ -1,3 +1,4 @@
+<!-- World for wheeled_model_enhanced. Created based on test_world. Contains only sun, ground plane and targeted model -->
 <sdf version="1.7">
     <world name="test_world">
         <plugin filename="ignition-gazebo-physics-system" name="gz::sim::systems::Physics">
