@@ -1,0 +1,47 @@
+<!-- World for wheeled_model_enhanced. Created based on test_world. Contains only sun, ground plane and targeted model -->
+<sdf version="1.7">
+    <world name="test_world">
+        <plugin filename="ignition-gazebo-physics-system" name="gz::sim::systems::Physics">
+        </plugin>
+        <plugin filename="ignition-gazebo-sensors-system" name="gz::sim::systems::Sensors">
+            <render_engine>ogre</render_engine>
+        </plugin>
+        <plugin filename="ignition-gazebo-user-commands-system" name="gz::sim::systems::UserCommands">
+        </plugin>
+        <plugin filename="ignition-gazebo-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster">
+        </plugin>
+        <plugin
+            filename="ignition-gazebo-imu-system"
+            name="gz::sim::systems::Imu">
+        </plugin>
+        <plugin
+            filename="ignition-gazebo-navsat-system"
+            name="ignition::gazebo::systems::NavSat">
+        </plugin>
+        <spherical_coordinates>
+            <surface_model>EARTH_WGS84</surface_model>
+            <world_frame_orientation>ENU</world_frame_orientation>
+            <latitude_deg>-22.986687</latitude_deg>
+            <longitude_deg>-43.202501</longitude_deg>
+            <elevation>0</elevation>
+            <heading_deg>0</heading_deg>
+        </spherical_coordinates>
+
+        <include>
+            <uri>
+                https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun
+            </uri>
+        </include>
+        <include>
+            <uri>
+                ground_plane
+            </uri>
+        </include>
+        <include>
+            <pose>0 0 0.5 0 0 0</pose>
+            <uri>
+                wheeled_model_enhanced
+            </uri>
+        </include>
+    </world>
+</sdf>
