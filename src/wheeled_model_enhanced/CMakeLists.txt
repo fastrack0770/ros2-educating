@@ -7,9 +7,33 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(action_msgs REQUIRED)
+find_package(rclcpp_action REQUIRED)
+find_package(ros_ign_gazebo REQUIRED)
+
+# Generate custom interfaces
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/ReachGoal.action"
+  DEPENDENCIES builtin_interfaces std_msgs action_msgs
+  ADD_LINTER_TESTS
+)
+
+# Get support for using custom interfaces
+rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+
+# Actions
+add_executable(reach_goal_action_server src/reach_goal_action_server.cpp)
+ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action)
+target_link_libraries(reach_goal_action_server "${cpp_typesupport_target}")
+
+# Install
+install(TARGETS
+  reach_goal_action_server
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
 install(DIRECTORY worlds DESTINATION share/${PROJECT_NAME}/)
