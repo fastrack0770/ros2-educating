@@ -13,6 +13,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(action_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(ros_ign_gazebo REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 # Generate custom interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -26,7 +27,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_t
 
 # Actions
 add_executable(reach_goal_action_server src/reach_goal_action_server.cpp)
-ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action)
+ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs)
 target_link_libraries(reach_goal_action_server "${cpp_typesupport_target}")
 
 # Install
