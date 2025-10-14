@@ -26,8 +26,12 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
 # Actions
-add_executable(reach_goal_action_server src/reach_goal_action_server.cpp)
+add_executable(reach_goal_action_server
+  src/reach_goal_action_server.cpp
+  include/wheeled_model_enhanced/pos.hpp
+  include/wheeled_model_enhanced/utils.hpp)
 ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs)
+target_include_directories(reach_goal_action_server PUBLIC include)
 target_link_libraries(reach_goal_action_server "${cpp_typesupport_target}")
 
 # Install
@@ -42,12 +46,13 @@ install(DIRECTORY models DESTINATION share/${PROJECT_NAME}/)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(${PROJECT_NAME}_tutorial_test test/tutorial_test.cpp)
-  target_include_directories(${PROJECT_NAME}_tutorial_test PUBLIC
+  ament_add_gtest(${PROJECT_NAME}_test test/main.cpp test/tutorial_test.cpp test/utils_test.cpp)
+  ament_target_dependencies(${PROJECT_NAME}_test rclcpp action_msgs rclcpp_action sensor_msgs)
+  target_include_directories(${PROJECT_NAME}_test PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
   )
-  target_link_libraries(${PROJECT_NAME}_tutorial_test)
+  target_link_libraries(${PROJECT_NAME}_test "${cpp_typesupport_target}")
 endif()
 
 ament_package()
