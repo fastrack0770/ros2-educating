@@ -171,6 +171,7 @@ public:
 
                             const auto start_point = rclcpp::Clock().now();
 
+                            // TODO prevent an endless looping (?)
                             while (not is_goal_reached())
                             {
                                 feedback->distance_to_point = distance_in_meters(_robot_pos, Pos(_current_goal));
