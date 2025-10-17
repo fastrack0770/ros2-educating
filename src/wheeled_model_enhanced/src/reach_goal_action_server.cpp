@@ -9,11 +9,20 @@
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 
+#include <iomanip>
+
 using ReachGoalAction = wheeled_model_enhanced::action::ReachGoal;
 using GoalHandle = rclcpp_action::ServerGoalHandle<ReachGoalAction>;
 
 // TODO make a speed publlisher that calculates speed from GPS position
 // TODO replace all cout with the proper log
+
+struct Cartesian
+{
+    double x = 0.f;
+    double y = 0.f;
+    double z = 0.f;
+};
 
 class ReachGoalActionServerNode : public rclcpp::Node
 {
@@ -25,6 +34,49 @@ public:
             const auto callback = [this](const sensor_msgs::msg::NavSatFix &msg)
             {
                 _robot_pos = msg;
+
+                try
+                {
+                    // using wgs-84
+                    const double B = _robot_pos.latitude().value();  // latitude, rad
+                    const double L = _robot_pos.longitude().value(); // longitude, rad
+                    const double H = _robot_pos.altitude().value() / 1000;  // altitude, km
+
+                    // geodesic to geocentric
+                    Cartesian geocentric;
+                    {
+                        const double f = 1 / 298.257234;
+                        const double a = 6378.137; // equatorial earth radius in km
+                        const double e_pow_2 = sqrt(f * (2 - f));
+                        const double N = a / sqrt(1 - e_pow_2 * pow(sin(B), 2));
+
+                        geocentric.x = (N + H) * cos(B) * cos(L);
+                        geocentric.y = (N + H) * cos(B) * sin(L);
+                        geocentric.z = (N + H - e_pow_2 * N) * sin(B);
+                    }
+
+                    // geocentric to topocentric
+                    Cartesian topocentric;
+                    {
+                        /**    (-sinB * cosL   -sinB * sinL   cosB)
+                         * M = ( cosB * cosL    cosB * sinL   sinB)
+                         *     (-sinL           cosL          0)
+                         */
+                        topocentric.x = -1 * sin(B) * cos(L) * geocentric.x - sin(B) * sin(L) * geocentric.y + cos(B) * geocentric.z;
+                        topocentric.y = cos(B) * cos(L) * geocentric.x + cos(B) * sin(L) * geocentric.y + sin(B) * geocentric.z;
+                        topocentric.z = -1 * sin(L) * geocentric.x + cos(L) * geocentric.y;
+                    }
+                    RCLCPP_INFO_STREAM(get_logger(),
+                                        std::setprecision(8) <<
+                                        "lat: " << B << ", long: " << L << ", alt: " << H <<
+                                       ", geoc x: " << geocentric.x << ", y: " << geocentric.y << ", z: " << geocentric.z << 
+                                       ", topoc x: " << topocentric.x << ", y: " << topocentric.y << ", z: " << topocentric.z);
+                }
+                catch (const std::exception &e)
+                {
+                    RCLCPP_INFO_STREAM(get_logger(),
+                                       "Got exception while calculate topocentric coords: " << e.what());
+                }
             };
 
             _navsat_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
@@ -47,12 +99,13 @@ public:
                     // euler z angle
                     const auto psi = atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
 
-                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 100,
+                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
                                                 "w: " << w << ", x: " << x << ", y: " << y << ", z: " << z << ", psi: " << psi);
                 }
                 catch (const std::exception &e)
                 {
-                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000, "Got exception while calculate angles from imu: " << e.what());
+                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
+                                                "Got exception while calculate angles from imu: " << e.what());
                 }
             };
 

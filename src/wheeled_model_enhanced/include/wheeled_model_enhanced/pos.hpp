@@ -139,8 +139,8 @@ public:
     {
         const std::lock_guard<decltype(_m)> lock(_m);
 
-        _latitude = msg.latitude;
-        _longitude = msg.longitude;
+        _latitude = msg.latitude * M_PI / 180; // latitude in navsatfix in degrees
+        _longitude = msg.longitude * M_PI / 180; // longitude in navsatfix in degrees
         _altitude = msg.altitude;
         return *this;
     }
