@@ -20,13 +20,45 @@ class ReachGoalActionServerNode : public rclcpp::Node
 public:
     ReachGoalActionServerNode() : Node("reach_goal_action_server_node")
     {
-        const auto callback = [this](const sensor_msgs::msg::NavSatFix &msg)
+        // navsat sub
         {
-            _robot_pos = msg;
-        };
+            const auto callback = [this](const sensor_msgs::msg::NavSatFix &msg)
+            {
+                _robot_pos = msg;
+            };
 
-        _navsat_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
-            "/navsat", 10, callback);
+            _navsat_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
+                "/navsat", 10, callback);
+        }
+
+        // imu sub
+        {
+            const auto callback = [this](const sensor_msgs::msg::Imu &msg)
+            {
+                _robot_imu = msg;
+
+                try
+                {
+                    const auto w = _robot_imu.orientation.w;
+                    const auto x = _robot_imu.orientation.x;
+                    const auto y = _robot_imu.orientation.y;
+                    const auto z = _robot_imu.orientation.z;
+
+                    // euler z angle
+                    const auto psi = atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
+
+                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 100,
+                                                "w: " << w << ", x: " << x << ", y: " << y << ", z: " << z << ", psi: " << psi);
+                }
+                catch (const std::exception &e)
+                {
+                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000, "Got exception while calculate angles from imu: " << e.what());
+                }
+            };
+
+            _imu_sub = create_subscription<sensor_msgs::msg::Imu>(
+                "/imu", 10, callback);
+        }
 
         const auto handle_goal = [this](const rclcpp_action::GoalUUID &, std::shared_ptr<const ReachGoalAction::Goal> goal) -> rclcpp_action::GoalResponse
         {
@@ -92,6 +124,10 @@ private:
 
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _navsat_sub;
     Pos _robot_pos;
+
+    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr _imu_sub;
+    sensor_msgs::msg::Imu _robot_imu;
+
     std::shared_ptr<const ReachGoalAction::Goal> _current_goal;
 };
 

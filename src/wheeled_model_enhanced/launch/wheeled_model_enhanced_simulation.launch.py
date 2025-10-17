@@ -44,13 +44,19 @@ def generate_launch_description():
                     "/camera@sensor_msgs/msg/Image[ignition.msgs.Image",
                     "/camera_pos_cmd@std_msgs/msg/Float64@ignition.msgs.Double",
                     "/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU",
-                    "/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat"
+                    "/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat",
                 ],
                 remappings=[
                     ("/model/wheeled_model_enhanced/cmd_vel", "cmd_vel"),
                     ("/camera", "/camera/image_raw"),
                 ],
                 output="screen",
+            ),
+            Node(
+                package="wheeled_model_enhanced",
+                executable="reach_goal_action_server",
+                name="reach_goal_action_server_node",
+                parameters=[],
             ),
             # Actually doesnt work. There are three copies of Node above that are created, and OnProcessExist kills only one of them
             # Btw if stop the simulation by Ctrl+C, all three copies will stop gracefully
