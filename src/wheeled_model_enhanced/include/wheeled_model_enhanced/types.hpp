@@ -299,7 +299,7 @@ class Pos
 
 inline std::ostream &operator<<(std::ostream &os, const Pos &rhv)
 {
-    return os << "{" << rhv._latitude << " " << rhv._longitude << " " << rhv._altitude << "}";
+    return os << "{ lat: " << rhv._latitude << " long: " << rhv._longitude << " alt: " << rhv._altitude << "}";
 }
 
 /**
@@ -364,5 +364,5 @@ struct Cartesian
 
 inline std::ostream &operator<<(std::ostream &os, const Cartesian &rhv)
 {
-    return os << "{" << rhv.x << " " << rhv.y << " " << rhv.z << "}";
+    return os << "{ x: " << rhv.x << " y: " << rhv.y << " z: " << rhv.z << "}";
 }

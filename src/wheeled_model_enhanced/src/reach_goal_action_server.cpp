@@ -25,14 +25,10 @@ class ReachGoalActionServerNode : public rclcpp::Node
             const auto callback = [this](const sensor_msgs::msg::NavSatFix &msg) {
                 _storage.set_robot_pos(msg);
 
-                const auto topocentric = _storage.robot_topo_pos();
-
                 try
                 {
-                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
-                                                         << "ROBOT lat: " << msg.latitude << ", long: " << msg.longitude
-                                                         << ", alt: " << msg.altitude << ", topoc x: " << topocentric.x
-                                                         << ", y: " << topocentric.y << ", z: " << topocentric.z);
+                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8) << "ROBOT gps: " << _storage.robot_gps_pos()
+                                                                          << ", topoc: " << _storage.robot_topo_pos());
                 }
                 catch (const std::exception &e)
                 {
@@ -49,15 +45,12 @@ class ReachGoalActionServerNode : public rclcpp::Node
             const auto callback = [this](const sensor_msgs::msg::NavSatFix &msg) {
                 _storage.set_waypoint_pos(msg);
 
-                const auto topocentric = _storage.waypoint_topo_pos();
-
                 try
                 {
                     RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
-                                                         << "WAYPOINT lat: " << msg.latitude
-                                                         << ", long: " << msg.longitude << ", alt: " << msg.altitude
-                                                         << ", topoc x: " << topocentric.x << ", y: " << topocentric.y
-                                                         << ", z: " << topocentric.z);
+                                                         << "WAYPOINT gps: " << _storage.waypoint_gps_pos()
+                                                         << ", topoc: " << _storage.waypoint_topo_pos()
+                                                         << ", related: " << _storage.waypoint_related_pos());
                 }
                 catch (const std::exception &e)
                 {
