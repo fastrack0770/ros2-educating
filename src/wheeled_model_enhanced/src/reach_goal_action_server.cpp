@@ -5,6 +5,7 @@
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 #include "wheeled_model_enhanced/action/reach_goal.hpp"
+#include "wheeled_model_enhanced/storage.hpp"
 #include "wheeled_model_enhanced/types.hpp"
 #include "wheeled_model_enhanced/utils.hpp"
 
@@ -22,18 +23,16 @@ class ReachGoalActionServerNode : public rclcpp::Node
         // robot navsat sub
         {
             const auto callback = [this](const sensor_msgs::msg::NavSatFix &msg) {
-                _robot_pos = msg;
+                _storage.set_robot_pos(msg);
+
+                const auto topocentric = _storage.robot_topo_pos();
 
                 try
                 {
-                    const auto topocentric = get_topo(_robot_pos, _robot_pos);
-
                     RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
-                                                         << "ROBOT lat: " << _robot_pos.latitude().value()
-                                                         << ", long: " << _robot_pos.longitude().value()
-                                                         << ", alt: " << _robot_pos.altitude().value()
-                                                         << ", topoc x: " << topocentric.x << ", y: " << topocentric.y
-                                                         << ", z: " << topocentric.z);
+                                                         << "ROBOT lat: " << msg.latitude << ", long: " << msg.longitude
+                                                         << ", alt: " << msg.altitude << ", topoc x: " << topocentric.x
+                                                         << ", y: " << topocentric.y << ", z: " << topocentric.z);
                 }
                 catch (const std::exception &e)
                 {
@@ -48,16 +47,15 @@ class ReachGoalActionServerNode : public rclcpp::Node
         // waypoint navsat sub
         {
             const auto callback = [this](const sensor_msgs::msg::NavSatFix &msg) {
-                _waypoint_pos = msg;
+                _storage.set_waypoint_pos(msg);
+
+                const auto topocentric = _storage.waypoint_topo_pos();
 
                 try
                 {
-                    const auto topocentric = get_topo(_waypoint_pos, _robot_pos);
-
                     RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
-                                                         << "WAYPOINT lat: " << _waypoint_pos.latitude().value()
-                                                         << ", long: " << _waypoint_pos.longitude().value()
-                                                         << ", alt: " << _waypoint_pos.altitude().value()
+                                                         << "WAYPOINT lat: " << msg.latitude
+                                                         << ", long: " << msg.longitude << ", alt: " << msg.altitude
                                                          << ", topoc x: " << topocentric.x << ", y: " << topocentric.y
                                                          << ", z: " << topocentric.z);
                 }
@@ -105,6 +103,8 @@ class ReachGoalActionServerNode : public rclcpp::Node
             std::cout << "got goal "
                       << "lat: " << goal->goal_lat << " "
                       << "long: " << goal->goal_long << std::endl;
+            std::cout << "skipping goal, going to the waypoint instead" << std::endl;
+
             return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
         };
         const auto handle_cancel = [](std::shared_ptr<GoalHandle>) -> rclcpp_action::CancelResponse {
@@ -121,14 +121,14 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 auto result = std::make_shared<ReachGoalAction::Result>();
                 rclcpp::Rate loop_rate(1);
 
-                feedback->distance_to_point = utils::distance_in_meters(_robot_pos, Pos(_current_goal));
+                feedback->distance_to_point = _storage.distance_to_waypoint();
 
                 const auto start_point = rclcpp::Clock().now();
 
                 // TODO prevent an endless looping (?)
                 while (not is_goal_reached())
                 {
-                    feedback->distance_to_point = utils::distance_in_meters(_robot_pos, Pos(_current_goal));
+                    feedback->distance_to_point = _storage.distance_to_waypoint();
 
                     goal_handle->publish_feedback(feedback);
                     loop_rate.sleep();
@@ -151,22 +151,19 @@ class ReachGoalActionServerNode : public rclcpp::Node
         // TODO get acceptable range from action server parameters
         constexpr double acceptable_range = 1; // 1 meter
 
-        return utils::distance_in_meters(_robot_pos, Pos(_current_goal)) <= acceptable_range;
+        return _storage.distance_to_waypoint() <= acceptable_range;
     }
 
   private:
     rclcpp_action::Server<ReachGoalAction>::SharedPtr _action_server;
 
-    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _robot_navsat_sub;
-    Pos _robot_pos;
+    Storage _storage;
 
+    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _robot_navsat_sub;
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _waypoint_navsat_sub;
-    Pos _waypoint_pos;
 
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr _imu_sub;
     sensor_msgs::msg::Imu _robot_imu;
-
-    std::shared_ptr<const ReachGoalAction::Goal> _current_goal;
 };
 
 int main(int argc, char *argv[])

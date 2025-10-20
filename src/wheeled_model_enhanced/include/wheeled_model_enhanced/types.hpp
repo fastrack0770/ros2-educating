@@ -127,6 +127,15 @@ class Pos
     {
     }
 
+    Pos(const Pos & copy)
+    {
+        std::lock(_m, copy._m);
+
+        _latitude = copy._latitude;
+        _longitude = copy._longitude;
+        _altitude = copy._altitude;
+    }
+
     Pos(Degree latitude, Degree longitude, Meter altitude)
         : _latitude(latitude), _longitude(longitude), _altitude(altitude)
     {
