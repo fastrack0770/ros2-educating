@@ -5,17 +5,22 @@
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 
 #include <atomic>
-#include <mutex>
-#include <memory>
 #include <cmath>
+#include <memory>
+#include <mutex>
 
 class Degree;
 
+/**
+ * Radian
+ * To store value in radians
+ */
 class Radian
 {
-public:
-    Radian(double value)
-        : _value(value) {}
+  public:
+    Radian(double value) : _value(value)
+    {
+    }
 
     Radian(Degree value);
 
@@ -24,59 +29,89 @@ public:
         return _value;
     }
 
-private:
+  private:
     double _value;
 };
 
+/**
+ * Degree
+ * To store value in degrees
+ */
 class Degree
 {
-public:
-    Degree(double value)
-        : _value(value) {}
+  public:
+    Degree(double value) : _value(value)
+    {
+    }
 
-    Degree(Radian value)
-        : _value(value.value() * 180 / M_PI) {}
+    Degree(Radian value) : _value(value.value() * 180 / M_PI)
+    {
+    }
 
-    double value() const noexcept { return _value; }
+    double value() const noexcept
+    {
+        return _value;
+    }
 
-private:
+  private:
     double _value;
 };
 
-inline Radian::Radian(Degree value) : _value(value.value() * M_PI / 180.0) {}
+inline Radian::Radian(Degree value) : _value(value.value() * M_PI / 180.0)
+{
+}
 
 class Kilometer;
 
+/**
+ * Meter
+ * To store value in meters
+ */
 class Meter
 {
-public:
-    Meter(double value)
-        : _value(value) {}
+  public:
+    Meter(double value) : _value(value)
+    {
+    }
 
     Meter(Kilometer value);
 
-    double value() const noexcept { return _value; }
+    double value() const noexcept
+    {
+        return _value;
+    }
 
-private:
+  private:
     double _value;
 };
 
+/**
+ * Kilometer
+ * To store value in km
+ */
 class Kilometer
 {
-public:
-    Kilometer(double value)
-        : _value(value) {}
+  public:
+    Kilometer(double value) : _value(value)
+    {
+    }
 
-    Kilometer(Meter value)
-        : _value(value.value() / 1000) {}
+    Kilometer(Meter value) : _value(value.value() / 1000)
+    {
+    }
 
-    double value() const noexcept { return _value; }
+    double value() const noexcept
+    {
+        return _value;
+    }
 
-private:
+  private:
     double _value;
 };
 
-inline Meter::Meter(Kilometer value) : _value(value.value() * 1000) {}
+inline Meter::Meter(Kilometer value) : _value(value.value() * 1000)
+{
+}
 
 /**
  * Pos
@@ -84,11 +119,13 @@ inline Meter::Meter(Kilometer value) : _value(value.value() * 1000) {}
  */
 class Pos
 {
-private:
+  private:
     using ReachGoalAction = wheeled_model_enhanced::action::ReachGoal;
 
-public:
-    Pos() {}
+  public:
+    Pos()
+    {
+    }
 
     Pos(Degree latitude, Degree longitude, Meter altitude)
         : _latitude(latitude), _longitude(longitude), _altitude(altitude)
@@ -139,16 +176,27 @@ public:
     {
         const std::lock_guard<decltype(_m)> lock(_m);
 
-        _latitude = msg.latitude * M_PI / 180; // latitude in navsatfix in degrees
+        _latitude = msg.latitude * M_PI / 180;   // latitude in navsatfix in degrees
         _longitude = msg.longitude * M_PI / 180; // longitude in navsatfix in degrees
         _altitude = msg.altitude;
         return *this;
     }
 
-private:
+  private:
     mutable std::mutex _m;
 
     Radian _latitude = 0.f;
     Radian _longitude = 0.f;
     Meter _altitude = 0.f;
+};
+
+/**
+ * Cartesian
+ * To storage cartesian coordinates
+ */
+struct Cartesian
+{
+    double x = 0.f;
+    double y = 0.f;
+    double z = 0.f;
 };

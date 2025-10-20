@@ -28,7 +28,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_t
 # Actions
 add_executable(reach_goal_action_server
   src/reach_goal_action_server.cpp
-  include/wheeled_model_enhanced/pos.hpp
+  include/wheeled_model_enhanced/types.hpp
   include/wheeled_model_enhanced/utils.hpp)
 ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs)
 target_include_directories(reach_goal_action_server PUBLIC include)
