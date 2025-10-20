@@ -44,7 +44,8 @@ def generate_launch_description():
                     "/camera@sensor_msgs/msg/Image[ignition.msgs.Image",
                     "/camera_pos_cmd@std_msgs/msg/Float64@ignition.msgs.Double",
                     "/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU",
-                    "/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat",
+                    "/wheeled_model_enhanced/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat",
+                    "/waypoint/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat",
                 ],
                 remappings=[
                     ("/model/wheeled_model_enhanced/cmd_vel", "cmd_vel"),

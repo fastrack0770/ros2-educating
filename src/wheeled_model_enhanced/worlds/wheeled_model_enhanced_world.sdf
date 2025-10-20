@@ -43,5 +43,11 @@
                 wheeled_model_enhanced
             </uri>
         </include>
+        <include>
+            <pose>10 0 1 0 0 0</pose>
+            <uri>
+                waypoint
+            </uri>
+        </include>
     </world>
 </sdf>

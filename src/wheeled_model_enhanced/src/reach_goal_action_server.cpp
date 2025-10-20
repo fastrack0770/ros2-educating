@@ -79,8 +79,8 @@ public:
                 }
             };
 
-            _navsat_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
-                "/navsat", 10, callback);
+            _robot_navsat_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
+                "/wheeled_model_enhanced/navsat", 10, callback);
         }
 
         // imu sub
@@ -175,7 +175,7 @@ public:
 private:
     rclcpp_action::Server<ReachGoalAction>::SharedPtr _action_server;
 
-    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _navsat_sub;
+    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _robot_navsat_sub;
     Pos _robot_pos;
 
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr _imu_sub;
