@@ -1,0 +1,142 @@
+#include <gtest/gtest.h>
+
+#include "wheeled_model_enhanced/types.hpp"
+
+TEST(types, radian)
+{
+    // Radian(double value)
+    {
+        constexpr double value = -5.231;
+        ASSERT_FLOAT_EQ(value, Radian(value).value());
+    }
+    // Radian(Degree value)
+    {
+        constexpr double value = 123;
+        ASSERT_FLOAT_EQ(2.14675498, Radian(Degree(value)).value());
+    }
+}
+
+TEST(types, degree)
+{
+    // Radian(double value)
+    {
+        constexpr double value = -5.231;
+        ASSERT_FLOAT_EQ(value, Degree(value).value());
+    }
+    // Radian(Degree value)
+    {
+        constexpr double value = 2.14675498;
+        ASSERT_FLOAT_EQ(123, Degree(Radian(value)).value());
+    }
+}
+
+TEST(types, meter)
+{
+    // Meter(double value)
+    {
+        constexpr double value = -5.231;
+        ASSERT_FLOAT_EQ(value, Meter(value).value());
+    }
+    // Meter(Kilometer value)
+    {
+        constexpr double value = -5.231;
+        ASSERT_FLOAT_EQ(-5231, Meter(Kilometer(value)).value());
+    }
+    // Meter &operator-(const Meter &rhv)
+    {
+        ASSERT_FLOAT_EQ(-0.25, (Meter(-0.125) - Meter(0.125)).value());
+    }
+    // Meter &operator-(double rhv)
+    {
+        ASSERT_FLOAT_EQ(-0.25, (Meter(-0.125) - 0.125).value());
+    }
+    // Meter &operator*(double rhv)
+    {
+        ASSERT_FLOAT_EQ(-0.25, (Meter(-0.125) * 2.f).value());
+    }
+    // Meter &operator-=(const Meter &rhv)
+    {
+        ASSERT_FLOAT_EQ(-0.25, (Meter(-0.125) -= 0.125).value());
+    }
+    // Meter &operator+(const Meter &rhv)
+    {
+        ASSERT_FLOAT_EQ(0, (Meter(-0.125) + Meter(0.125)).value());
+    }
+    // Meter &operator+(double rhv)
+    {
+        ASSERT_FLOAT_EQ(0, (Meter(-0.125) + 0.125).value());
+    }
+    // Meter &operator+=(const Meter &rhv)
+    {
+        ASSERT_FLOAT_EQ(0, (Meter(-0.125) += 0.125).value());
+    }
+    // double operator*(const double & lhv, const Meter & rhv)
+    {
+        ASSERT_FLOAT_EQ(-0.25, 2.f * Meter(-0.125));
+    }
+}
+
+TEST(types, kilometer)
+{
+    // Kilometer(double value)
+    {
+        constexpr double value = -5.231;
+        ASSERT_FLOAT_EQ(value, Kilometer(value).value());
+    }
+    // Kilometer(Meter value)
+    {
+        constexpr double value = -5.231;
+        ASSERT_FLOAT_EQ(-0.005231, Kilometer(Meter(value)).value());
+    }
+}
+
+TEST(types, pos)
+{
+    // Pos(const Pos &copy)
+    {
+        const Pos to_copy(0.5, 0.6, 0.7);
+        ASSERT_EQ(to_copy, Pos(to_copy));
+    }
+    // Pos(std::shared_ptr<const ReachGoalAction::Goal> goal)
+    {
+        using ReachGoalAction = wheeled_model_enhanced::action::ReachGoal;
+
+        const auto goal = std::make_shared<ReachGoalAction::Goal>();
+        goal->goal_lat = 123.22;
+        goal->goal_long = -23.2;
+
+        ASSERT_EQ(Pos(Degree(123.22), Degree(-23.2), Meter(0)), Pos(goal)) << Pos(goal);
+    }
+    // pos getters and setters
+    {
+        Pos pos(2.5, -1.2, 0.7);
+        ASSERT_FLOAT_EQ(2.5, pos.latitude().value()) << pos;
+        ASSERT_FLOAT_EQ(-1.2, pos.longitude().value()) << pos;
+        ASSERT_FLOAT_EQ(0.7, pos.altitude().value()) << pos;
+
+        pos.setLatitude(0.5);
+        ASSERT_FLOAT_EQ(0.5, pos.latitude().value());
+        pos.setLongitude(0.6);
+        ASSERT_FLOAT_EQ(0.6, pos.longitude().value());
+        pos.setAltitude(0.7);
+        ASSERT_FLOAT_EQ(0.7, pos.altitude().value());
+    }
+}
+
+TEST(types, cartesian)
+{
+    // Cartesian operator-(Cartesian lhv, const Cartesian &rhv)
+    {
+        Cartesian lhv(5, 7, 9);
+        Cartesian rhv(2, 3, 4);
+        ASSERT_EQ(Cartesian(3, 4, 5), lhv - rhv);
+        ASSERT_EQ(Cartesian(5, 7, 9), lhv) << lhv;
+    }
+    // Cartesian operator+(Cartesian lhv, const Cartesian &rhv)
+    {
+        Cartesian lhv(5, 7, 9);
+        Cartesian rhv(2, 3, 4);
+        ASSERT_EQ(Cartesian(7, 10, 13), lhv + rhv);
+        ASSERT_EQ(Cartesian(5, 7, 9), lhv) << lhv;
+    }
+}

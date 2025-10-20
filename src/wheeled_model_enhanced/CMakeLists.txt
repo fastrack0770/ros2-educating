@@ -50,7 +50,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(${PROJECT_NAME}_test test/main.cpp test/tutorial_test.cpp test/utils_test.cpp)
+  ament_add_gtest(${PROJECT_NAME}_test test/main.cpp test/tutorial_test.cpp test/utils_test.cpp test/types_test.cpp)
   ament_target_dependencies(${PROJECT_NAME}_test rclcpp action_msgs rclcpp_action sensor_msgs)
   target_include_directories(${PROJECT_NAME}_test PUBLIC
     ../include

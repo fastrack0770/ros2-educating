@@ -90,9 +90,9 @@ Cartesian get_topo(const Pos &point, const Pos &point_of_view)
         const double e_pow_2 = sqrt(f * (2 - f));
         const double N = a / sqrt(1 - e_pow_2 * pow(sin(B), 2));
 
-        geocentric.x = (N + H) * cos(B) * cos(L);
-        geocentric.y = (N + H) * cos(B) * sin(L);
-        geocentric.z = (N + H - e_pow_2 * N) * sin(B);
+        geocentric.x = Kilometer((N + H) * cos(B) * cos(L));
+        geocentric.y = Kilometer((N + H) * cos(B) * sin(L));
+        geocentric.z = Kilometer((N + H - e_pow_2 * N) * sin(B));
     }
 
     // geocentric to topocentric
