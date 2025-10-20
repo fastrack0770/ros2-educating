@@ -1,0 +1,2 @@
+BasedOnStyle: Microsoft # Google, LLVM, Chromium, Microsoft, WebKit, etc.
+ColumnLimit: 120
