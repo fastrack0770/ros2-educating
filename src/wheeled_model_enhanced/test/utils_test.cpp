@@ -2,9 +2,9 @@
 
 #include "wheeled_model_enhanced/utils.hpp"
 
-TEST(utils, get_vector_3d_abs)
+TEST(utils, abs)
 {
-    ASSERT_FLOAT_EQ(6.020797289, utils::get_vector_3d_abs(3.2, -5.1, 0));
+    ASSERT_FLOAT_EQ(6.020797289, utils::abs(Vector3D(3.2, -5.1, 0)));
 }
 
 TEST(utils, earth_radius_at)

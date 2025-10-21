@@ -119,11 +119,6 @@ class Meter
         return lhv._value - rhv;
     }
 
-    friend Meter operator*(Meter lhv, double rhv)
-    {
-        return lhv._value * rhv;
-    }
-
     Meter &operator-=(const Meter &rhv)
     {
         _value -= rhv._value;
@@ -144,6 +139,24 @@ class Meter
     {
         _value += rhv._value;
         return *this;
+    }
+
+    friend Meter operator*(Meter lhv, double rhv)
+    {
+        return lhv._value * rhv;
+    }
+
+    Meter &operator*=(const Meter &rhv)
+    {
+        _value *= rhv._value;
+
+        return *this;
+    }
+
+    friend Meter operator*(Meter lhv, const Meter &rhv)
+    {
+        lhv *= rhv;
+        return lhv;
     }
 
     bool operator==(const Meter &rhv) const noexcept
@@ -365,4 +378,11 @@ struct Cartesian
 inline std::ostream &operator<<(std::ostream &os, const Cartesian &rhv)
 {
     return os << "{ x: " << rhv.x << " y: " << rhv.y << " z: " << rhv.z << "}";
+}
+
+using Vector3D = Cartesian;
+
+inline double operator*(const Vector3D &lhv, const Vector3D &rhv)
+{
+    return (lhv.x * rhv.x + lhv.y * rhv.y + lhv.z * rhv.z).value();
 }

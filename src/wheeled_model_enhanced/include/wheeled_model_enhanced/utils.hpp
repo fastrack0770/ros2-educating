@@ -2,17 +2,37 @@
 
 #include "types.hpp"
 
+#include "sensor_msgs/msg/imu.hpp"
+
 #include <cmath>
 
 namespace utils
 {
 /**
- * get_vector_3d_abs
- * Get a module from a 3d vector
+ * abs
+ * Get a module from a 3d vector. Result in meters
  */
-double get_vector_3d_abs(double x, double y, double z)
+double abs(Vector3D vec)
 {
-    return std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2));
+    return std::sqrt(std::pow(vec.x.value(), 2) + std::pow(vec.y.value(), 2) + std::pow(vec.z.value(), 2));
+}
+
+/**
+ * make_vector
+ * Make a vector from two cartesian coordinates
+ */
+Vector3D make_vector(const Cartesian &lhv, const Cartesian &rhv)
+{
+    return Vector3D(rhv.x - lhv.x, rhv.y - lhv.y, rhv.z - lhv.z);
+}
+
+/**
+ * get_angle_between_vectors
+ * Get angle between two 3D vectors
+ */
+double get_angle_between_vectors(const Vector3D &lhv, const Vector3D &rhv)
+{
+    return acos((lhv * rhv) / (abs(lhv) * abs(rhv)));
 }
 
 /**
@@ -70,13 +90,15 @@ double distance_in_meters(const Pos &lhv, const Pos &rhv)
 
 /**
  * get_topo
- * Get topocentric coordinates related to the specified point of view
+ * ECEF to ENU transformation. Result is a topocentric coordinate related to the specified point of view.
+ * Note that you must use only one point of view for every point you want to calculate, so all points
+ * will be in the same cartesian coordinates system.
  */
 Cartesian get_topo(const Pos &point, const Pos &point_of_view)
 {
     // using wgs-84
-    const double B = point.latitude().value();        // latitude, rad
-    const double L = point.longitude().value();       // longitude, rad
+    const double B = point.latitude().value();            // latitude, rad
+    const double L = point.longitude().value();           // longitude, rad
     const double H = Kilometer(point.altitude()).value(); // altitude, km
 
     const double B_view = point_of_view.latitude().value();  // latitude, rad
@@ -90,9 +112,9 @@ Cartesian get_topo(const Pos &point, const Pos &point_of_view)
         const double e_pow_2 = sqrt(f * (2 - f));
         const double N = a / sqrt(1 - e_pow_2 * pow(sin(B), 2));
 
-        geocentric.x = Kilometer((N + H) * cos(B) * cos(L));
-        geocentric.y = Kilometer((N + H) * cos(B) * sin(L));
-        geocentric.z = Kilometer((N + H - e_pow_2 * N) * sin(B));
+        geocentric.x = Kilometer((N + H) * cos(B) * cos(L));      // North
+        geocentric.y = Kilometer((N + H) * cos(B) * sin(L));      // Up
+        geocentric.z = Kilometer((N + H - e_pow_2 * N) * sin(B)); // East
     }
 
     // geocentric to topocentric
@@ -111,4 +133,34 @@ Cartesian get_topo(const Pos &point, const Pos &point_of_view)
 
     return topocentric;
 }
+
+/**
+ * get_euler_z_angle
+ * Get angle, which to rotate to robot will face north
+ * Resource: https://blog.endaq.com/quaternions-for-orientation
+ */
+double get_euler_z_angle(const sensor_msgs::msg::Imu &imu)
+{
+    const auto w = imu.orientation.w;
+    const auto x = imu.orientation.x;
+    const auto y = imu.orientation.y;
+    const auto z = imu.orientation.z;
+    return atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
+}
+
+/**
+ * get_angle_to_waypoint
+ * Get angle, which to rotate to robot will face waypoint
+ */
+double get_angle_to_waypoint(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu)
+{
+    const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
+    const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
+
+    const auto angle_to_north = get_euler_z_angle(imu);
+    const auto rn_wr_angle = get_angle_between_vectors(rn_vec, wr_vec);
+
+    return angle_to_north + rn_wr_angle;
+}
+
 } // end of namespace utils
