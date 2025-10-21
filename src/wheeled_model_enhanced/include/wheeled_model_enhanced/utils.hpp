@@ -76,7 +76,7 @@ Cartesian get_topo(const Pos &point, const Pos &point_of_view)
 {
     // using wgs-84
     const double B = point.latitude().value();        // latitude, rad
-    const double L = point.longitude().value();      g // longitude, rad
+    const double L = point.longitude().value();       // longitude, rad
     const double H = Kilometer(point.altitude()).value(); // altitude, km
 
     const double B_view = point_of_view.latitude().value();  // latitude, rad
