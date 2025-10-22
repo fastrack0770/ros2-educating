@@ -8,6 +8,17 @@
 
 namespace utils
 {
+
+double to_deg(double value)
+{
+    return value / M_PI * 180;
+}
+
+double to_rad(double value)
+{
+    return value * M_PI / 180;
+}
+
 /**
  * abs
  * Get a module from a 3d vector. Result in meters
@@ -150,7 +161,7 @@ double get_euler_z_angle(const sensor_msgs::msg::Imu &imu)
 
 /**
  * get_angle_to_waypoint
- * Get angle, which to rotate to robot will face waypoint
+ * Get angle, which to rotate to robot will face waypoint. The angle is positive wherever robot and waypoint are
  */
 double get_angle_to_waypoint(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu)
 {
@@ -159,6 +170,51 @@ double get_angle_to_waypoint(const Cartesian &robot, const Cartesian &waypoint, 
 
     const auto angle_to_north = get_euler_z_angle(imu);
     const auto rn_wr_angle = get_angle_between_vectors(rn_vec, wr_vec);
+
+    return angle_to_north + rn_wr_angle;
+}
+
+Plane get_plane(const Point &point, const Vector3D &lhv, const Vector3D &rhv)
+{
+    const auto a = lhv.y * rhv.z - rhv.y * lhv.z;
+    const auto b = lhv.x * rhv.z - rhv.x * lhv.z;
+    const auto c = lhv.x * rhv.y - rhv.x * lhv.y;
+    const auto d = (-1) * point.x * a + point.y * b - point.z * c;
+
+    return {a, b, c, d};
+}
+
+Vector3D normalize(Vector3D vec)
+{
+    const auto m = abs(vec);
+    return {vec.x / m, vec.y / m, vec.z / m};
+}
+
+/**
+ * get_angle_between_vectors_signed
+ * Get angle between two 3D vectors, positive when lhv to the left of rhv
+ */
+double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector3D &rhv)
+{
+    return atan2((lhv ^ rhv) * Vector3D(0, 1, 0)/* the plane normal pointing up */, lhv * rhv);
+}
+
+/**
+ * get_angle_to_waypoint_signed
+ * Get angle, which to rotate to robot will face waypoint. The angle is positive when waypoint to the right of the robot
+ */
+double get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu)
+{
+    const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
+    const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
+
+    const auto angle_to_north = get_euler_z_angle(imu);
+    const auto rn_wr_angle = get_angle_between_vectors_signed(rn_vec, wr_vec);
+
+    if (std::isnan(rn_wr_angle)) // angle between two vectors is 0
+    {
+        return angle_to_north;
+    }
 
     return angle_to_north + rn_wr_angle;
 }

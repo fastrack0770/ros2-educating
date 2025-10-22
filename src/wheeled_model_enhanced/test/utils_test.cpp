@@ -28,3 +28,112 @@ TEST(utils, distance_in_meters)
     ASSERT_FLOAT_EQ(376094.41, utils::distance_in_meters(Pos(Degree(35.652832), Degree(139.839478), 0),   // tokyo
                                                          Pos(Degree(35.011665), Degree(135.768326), 0))); // kyoto
 }
+
+TEST(utils, get_angle_to_waypoint)
+{
+    using namespace utils;
+    // robot looks north, angle to turn is 0 degrees
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(15, 0, 0);
+        sensor_msgs::msg::Imu imu;
+        imu.orientation.w = 1;
+        imu.orientation.x = 0;
+        imu.orientation.y = 0;
+        imu.orientation.z = 0;
+
+        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        ASSERT_FLOAT_EQ(0, to_deg(get_angle_to_waypoint(robot, waypoint, imu)));
+    }
+    // robot looks north, angle to turn is 90 degrees
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(0, 3, 0);
+        sensor_msgs::msg::Imu imu;
+        imu.orientation.w = 1;
+        imu.orientation.x = 0;
+        imu.orientation.y = 0;
+        imu.orientation.z = 0;
+
+        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        ASSERT_FLOAT_EQ(90, to_deg(get_angle_to_waypoint(robot, waypoint, imu)));
+    }
+}
+
+TEST(utils, get_plane)
+{
+    using namespace utils;
+    {
+        const Point point(-1, 2, -3);
+        const Vector3D lhv(4, 3, 2);
+        const Vector3D rhv(-5, 7, 1);
+
+        ASSERT_EQ(Plane(-11, 14, 43, 146), get_plane(point, lhv, rhv));
+    }
+    {
+        const Point point(0, 0, 0);
+        const Vector3D lhv(100, 0, 0);
+        const Vector3D rhv(0, 3, 0);
+
+        ASSERT_EQ(Plane(0, 0, 300, 0), get_plane(point, lhv, rhv));
+    }
+    {
+        const Point point(0, 0, 0);
+        const Vector3D lhv(100, 0, 0);
+        const Vector3D rhv(0, -3, 0);
+
+        ASSERT_EQ(Plane(0, 0, -300, 0), get_plane(point, lhv, rhv));
+    }
+}
+
+TEST(utils, normalize)
+{
+    using namespace utils;
+    
+    ASSERT_EQ(Vector3D(0, 0, 1), normalize(Vector3D(0, 0, 300)));
+}
+
+TEST(utils, get_angle_to_waypoint_signed)
+{
+    using namespace utils;
+
+    // robot looks north, angle to turn is 0 degrees
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(15, 0, 0);
+        sensor_msgs::msg::Imu imu;
+        imu.orientation.w = 1;
+        imu.orientation.x = 0;
+        imu.orientation.y = 0;
+        imu.orientation.z = 0;
+
+        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        ASSERT_FLOAT_EQ(0, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+    }
+    // robot looks north, angle to turn is 90 degrees
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(0, 0, 3);
+        sensor_msgs::msg::Imu imu;
+        imu.orientation.w = 1;
+        imu.orientation.x = 0;
+        imu.orientation.y = 0;
+        imu.orientation.z = 0;
+
+        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        ASSERT_FLOAT_EQ(-90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+    }
+    // robot looks north, angle to turn is -90
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(0, 0, -3);
+        sensor_msgs::msg::Imu imu;
+        imu.orientation.w = 1;
+        imu.orientation.x = 0;
+        imu.orientation.y = 0;
+        imu.orientation.z = 0;
+
+        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        ASSERT_FLOAT_EQ(90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+    }
+}
