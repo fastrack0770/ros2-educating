@@ -98,106 +98,123 @@ class Kilometer;
 class Meter
 {
   public:
-    Meter(double value) : _value(value)
+    constexpr Meter(double value) : _value(value)
     {
     }
 
-    Meter(Kilometer value);
+    constexpr Meter(Kilometer value);
 
-    double value() const noexcept
+    constexpr double value() const noexcept
     {
         return _value;
     }
 
-    friend Meter operator-(Meter lhv, const Meter &rhv)
+    constexpr friend Meter operator-(Meter lhv, const Meter &rhv)
     {
         return lhv._value - rhv._value;
     }
 
-    friend Meter operator-(Meter lhv, double rhv)
+    constexpr friend Meter operator-(Meter lhv, double rhv)
     {
         return lhv._value - rhv;
     }
 
-    Meter &operator-=(const Meter &rhv)
+    constexpr Meter &operator-=(const Meter &rhv)
     {
         _value -= rhv._value;
         return *this;
     }
 
-    friend Meter operator+(Meter lhv, const Meter &rhv)
+    constexpr friend Meter operator+(Meter lhv, const Meter &rhv)
     {
         return lhv._value + rhv._value;
     }
 
-    friend Meter operator+(Meter lhv, double rhv)
+    constexpr friend Meter operator+(Meter lhv, double rhv)
     {
         return lhv._value + rhv;
     }
 
-    Meter &operator+=(const Meter &rhv)
+    constexpr Meter &operator+=(const Meter &rhv)
     {
         _value += rhv._value;
         return *this;
     }
 
-    friend Meter operator*(Meter lhv, double rhv)
+    constexpr friend Meter operator*(Meter lhv, double rhv)
     {
         return lhv._value * rhv;
     }
 
-    Meter &operator*=(const Meter &rhv)
+    constexpr Meter &operator*=(const Meter &rhv)
     {
         _value *= rhv._value;
 
         return *this;
     }
 
-    friend Meter operator*(Meter lhv, const Meter &rhv)
+    constexpr friend Meter operator*(Meter lhv, const Meter &rhv)
     {
         lhv *= rhv;
         return lhv;
     }
 
-    Meter &operator/=(const Meter &rhv)
+    constexpr Meter &operator/=(const Meter &rhv)
     {
         _value /= rhv._value;
 
         return *this;
     }
 
-    friend Meter operator/(Meter lhv, const Meter &rhv)
+    constexpr friend Meter operator/(Meter lhv, const Meter &rhv)
     {
         lhv /= rhv;
         return lhv;
     }
 
-    bool operator==(const Meter &rhv) const noexcept
+    constexpr bool operator==(const Meter &rhv) const noexcept
     {
         return _value == rhv._value;
     }
 
-    bool operator!=(const Meter &rhv) const noexcept
+    constexpr bool operator!=(const Meter &rhv) const noexcept
     {
         return !(*this == rhv);
     }
 
-    friend double operator*(const double &lhv, const Meter &rhv);
-    friend std::ostream &operator<<(std::ostream &os, const Meter &rhv);
+    constexpr bool operator<=(const Meter &rhv) const noexcept
+    {
+        return _value <= rhv._value;
+    }
+
+    constexpr bool operator>(const Meter &rhv) const noexcept
+    {
+        return !(*this <= rhv);
+    }
+
+    constexpr bool operator>=(const Meter &rhv) const noexcept
+    {
+        return _value >= rhv._value;
+    }
+
+    constexpr bool operator<(const Meter &rhv) const noexcept
+    {
+        return !(*this >= rhv);
+    }
+
+    constexpr friend double operator*(const double &lhv, const Meter &rhv)
+    {
+        return lhv * rhv._value;
+    }
+    
+    friend std::ostream &operator<<(std::ostream &os, const Meter &rhv)
+    {
+        return os << rhv._value;
+    }
 
   private:
     double _value;
 };
-
-inline double operator*(const double &lhv, const Meter &rhv)
-{
-    return lhv * rhv._value;
-}
-
-inline std::ostream &operator<<(std::ostream &os, const Meter &rhv)
-{
-    return os << rhv._value;
-}
 
 /**
  * Kilometer
@@ -206,25 +223,25 @@ inline std::ostream &operator<<(std::ostream &os, const Meter &rhv)
 class Kilometer
 {
   public:
-    Kilometer(double value) : _value(value)
+    constexpr Kilometer(double value) : _value(value)
     {
     }
 
-    Kilometer(Meter value) : _value(value.value() / 1000)
+    constexpr Kilometer(Meter value) : _value(value.value() / 1000)
     {
     }
 
-    double value() const noexcept
+    constexpr double value() const noexcept
     {
         return _value;
     }
 
-    bool operator==(const Kilometer &rhv) const noexcept
+    constexpr bool operator==(const Kilometer &rhv) const noexcept
     {
         return _value == rhv._value;
     }
 
-    bool operator!=(const Kilometer &rhv) const noexcept
+    constexpr bool operator!=(const Kilometer &rhv) const noexcept
     {
         return !(*this == rhv);
     }
@@ -233,7 +250,7 @@ class Kilometer
     double _value;
 };
 
-inline Meter::Meter(Kilometer value) : _value(value.value() * 1000)
+inline constexpr Meter::Meter(Kilometer value) : _value(value.value() * 1000)
 {
 }
 

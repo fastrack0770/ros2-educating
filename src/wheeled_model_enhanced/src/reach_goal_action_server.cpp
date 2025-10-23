@@ -29,6 +29,10 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 {
                     RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8) << "ROBOT gps: " << _storage.robot_gps_pos()
                                                                           << ", topoc: " << _storage.robot_topo_pos());
+                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
+                                                         << "distance gps: " << _storage.distance_to_waypoint_gps()
+                                                         << ", related: " << _storage.distance_to_waypoint_related()
+                                                         << ", angle: " << Degree(_storage.angle_to_waypoint()).value());
                 }
                 catch (const std::exception &e)
                 {
@@ -64,21 +68,12 @@ class ReachGoalActionServerNode : public rclcpp::Node
         // imu sub
         {
             const auto callback = [this](const sensor_msgs::msg::Imu &msg) {
-                _robot_imu = msg;
+                _storage.set_imu(msg);
 
                 try
                 {
-                    const auto w = _robot_imu.orientation.w;
-                    const auto x = _robot_imu.orientation.x;
-                    const auto y = _robot_imu.orientation.y;
-                    const auto z = _robot_imu.orientation.z;
-
-                    // euler z angle
-                    const auto psi = atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
-
                     RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
-                                                "w: " << w << ", x: " << x << ", y: " << y << ", z: " << z
-                                                      << ", psi: " << psi);
+                                                "angle to north: " << utils::to_deg(utils::get_euler_z_angle(msg)));
                 }
                 catch (const std::exception &e)
                 {
@@ -114,14 +109,14 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 auto result = std::make_shared<ReachGoalAction::Result>();
                 rclcpp::Rate loop_rate(1);
 
-                feedback->distance_to_point = _storage.distance_to_waypoint();
+                feedback->distance_to_point = _storage.distance_to_waypoint_gps().value();
 
                 const auto start_point = rclcpp::Clock().now();
 
                 // TODO prevent an endless looping (?)
                 while (not is_goal_reached())
                 {
-                    feedback->distance_to_point = _storage.distance_to_waypoint();
+                    feedback->distance_to_point = _storage.distance_to_waypoint_gps().value();
 
                     goal_handle->publish_feedback(feedback);
                     loop_rate.sleep();
@@ -142,9 +137,9 @@ class ReachGoalActionServerNode : public rclcpp::Node
     bool is_goal_reached() const noexcept
     {
         // TODO get acceptable range from action server parameters
-        constexpr double acceptable_range = 1; // 1 meter
+        constexpr Meter acceptable_range = 1; // 1 meter
 
-        return _storage.distance_to_waypoint() <= acceptable_range;
+        return _storage.distance_to_waypoint_gps() <= acceptable_range;
     }
 
   private:
@@ -156,7 +151,6 @@ class ReachGoalActionServerNode : public rclcpp::Node
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _waypoint_navsat_sub;
 
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr _imu_sub;
-    sensor_msgs::msg::Imu _robot_imu;
 };
 
 int main(int argc, char *argv[])

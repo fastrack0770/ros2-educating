@@ -82,11 +82,11 @@ double earth_radius_at_2(const Pos &pos)
 }
 
 /**
- * distance_in_meters
+ * distance
  * Distance by Haversine formula
  * Source: https://www.movable-type.co.uk/scripts/latlong.html
  */
-double distance_in_meters(const Pos &lhv, const Pos &rhv)
+Meter distance(const Pos &lhv, const Pos &rhv)
 {
     const double a = std::pow(std::sin(std::abs(lhv.latitude().value() - rhv.latitude().value()) / 2), 2) +
                      std::cos(lhv.latitude().value()) * std::cos(rhv.latitude().value()) *
@@ -96,7 +96,18 @@ double distance_in_meters(const Pos &lhv, const Pos &rhv)
     const double earth_radius = earth_radius_at(lhv); // in meters
     const double d = earth_radius * c;
 
-    return d;
+    return Meter(d);
+}
+
+/**
+ * distance
+ * Euclidean distance
+ * Source: https://en.wikipedia.org/wiki/Euclidean_distance
+ */
+Meter distance(const Cartesian &lhv, const Cartesian &rhv)
+{
+    return Meter(
+        sqrt(pow((lhv.x - rhv.x).value(), 2) + pow((lhv.y - rhv.y).value(), 2) + pow((lhv.z - rhv.z).value(), 2)));
 }
 
 /**
@@ -196,14 +207,14 @@ Vector3D normalize(Vector3D vec)
  */
 double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector3D &rhv)
 {
-    return atan2((lhv ^ rhv) * Vector3D(0, 1, 0)/* the plane normal pointing up */, lhv * rhv);
+    return atan2((lhv ^ rhv) * Vector3D(0, 1, 0) /* the plane normal pointing up */, lhv * rhv);
 }
 
 /**
  * get_angle_to_waypoint_signed
  * Get angle, which to rotate to robot will face waypoint. The angle is positive when waypoint to the right of the robot
  */
-double get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu)
+Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu)
 {
     const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
     const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
@@ -213,10 +224,10 @@ double get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &way
 
     if (std::isnan(rn_wr_angle)) // angle between two vectors is 0
     {
-        return angle_to_north;
+        return Radian(angle_to_north);
     }
 
-    return angle_to_north + rn_wr_angle;
+    return Radian(angle_to_north + rn_wr_angle);
 }
 
 } // end of namespace utils
