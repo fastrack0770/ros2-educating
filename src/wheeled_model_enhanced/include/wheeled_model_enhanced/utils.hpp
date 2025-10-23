@@ -214,12 +214,12 @@ double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector3D &rhv
  * get_angle_to_waypoint_signed
  * Get angle, which to rotate to robot will face waypoint. The angle is positive when waypoint to the right of the robot
  */
-Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu)
+Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu, const Radian & imu_robot_twist = 0)
 {
     const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
     const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
 
-    const auto angle_to_north = get_euler_z_angle(imu);
+    const auto angle_to_north = get_euler_z_angle(imu) + imu_robot_twist.value();
     const auto rn_wr_angle = get_angle_between_vectors_signed(rn_vec, wr_vec);
 
     if (std::isnan(rn_wr_angle)) // angle between two vectors is 0

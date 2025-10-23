@@ -29,10 +29,11 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 {
                     RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8) << "ROBOT gps: " << _storage.robot_gps_pos()
                                                                           << ", topoc: " << _storage.robot_topo_pos());
-                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
-                                                         << "distance gps: " << _storage.distance_to_waypoint_gps()
-                                                         << ", related: " << _storage.distance_to_waypoint_related()
-                                                         << ", angle: " << Degree(_storage.angle_to_waypoint()).value());
+                    RCLCPP_INFO_STREAM(get_logger(),
+                                       std::setprecision(8)
+                                           << "distance gps: " << _storage.distance_to_waypoint_gps()
+                                           << ", related: " << _storage.distance_to_waypoint_related()
+                                           << ", angle: " << Degree(_storage.angle_to_waypoint()).value());
                 }
                 catch (const std::exception &e)
                 {
@@ -73,7 +74,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 try
                 {
                     RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
-                                                "angle to north: " << utils::to_deg(utils::get_euler_z_angle(msg)));
+                                                "robot azimuth: " << _storage.robot_azimuth());
                 }
                 catch (const std::exception &e)
                 {

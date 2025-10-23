@@ -95,8 +95,9 @@ class Storage
         const std::lock_guard<decltype(_m)> lock(_m);
 
         _imu = imu;
+        // TODO refactor - imu_robot_twist must be defined only in one place
         _angle_to_waypoint =
-            utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, _imu);
+            utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, _imu, _robot_imu_twist);
     }
 
     Radian angle_to_waypoint() const noexcept
@@ -113,8 +114,15 @@ class Storage
         return _distance_to_waypoint_related;
     }
 
+    Radian robot_azimuth() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return Radian(utils::get_euler_z_angle(_imu) + _robot_imu_twist.value());
+    }
+
   private:
-    mutable std::mutex _m;
+    mutable std::recursive_mutex _m;
 
     Meter _distance_to_waypoint_gps = 0.f;
     Meter _distance_to_waypoint_related = 0.f;
@@ -123,4 +131,8 @@ class Storage
 
     sensor_msgs::msg::Imu _imu;
     Radian _angle_to_waypoint = 0.f;
+
+    // TODO make it as a parameter
+    // Difference between the IMU sensor and the robot orientationss
+    const Radian _robot_imu_twist = Degree(-90);
 };

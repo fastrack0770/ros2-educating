@@ -112,7 +112,7 @@
         </inertia>
         <pose>0 0 0 0 -0 0</pose>
       </inertial>
-      <pose>0.2 0 -0.017857 2e-06 5e-06 -0.003151</pose>
+      <pose>0.2 0 -0.017857 -2e-06 -5e-06 3.14159</pose>
       <gravity>1</gravity>
       <self_collide>0</self_collide>
       <kinematic>0</kinematic>

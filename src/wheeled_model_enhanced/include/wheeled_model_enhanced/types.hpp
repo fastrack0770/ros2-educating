@@ -40,6 +40,8 @@ class Radian
         return !(*this == rhv);
     }
 
+    
+
     friend std::ostream &operator<<(std::ostream &os, const Radian &rhv);
 
   private:
@@ -206,7 +208,7 @@ class Meter
     {
         return lhv * rhv._value;
     }
-    
+
     friend std::ostream &operator<<(std::ostream &os, const Meter &rhv)
     {
         return os << rhv._value;
