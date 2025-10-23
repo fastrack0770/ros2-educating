@@ -4,28 +4,28 @@
 
 TEST(utils, abs)
 {
-    ASSERT_FLOAT_EQ(6.020797289, utils::abs(Vector3D(3.2, -5.1, 0)));
+    EXPECT_FLOAT_EQ(6.020797289, utils::abs(Vector3D(3.2, -5.1, 0)));
 }
 
 TEST(utils, earth_radius_at)
 {
-    ASSERT_FLOAT_EQ(6378137.0, utils::earth_radius_at(Pos(Degree(0), Degree(12), 0)));
+    EXPECT_FLOAT_EQ(6378137.0, utils::earth_radius_at(Pos(Degree(0), Degree(12), 0)));
     // must be 6356752.314, but is not
-    ASSERT_FLOAT_EQ(6360159, utils::earth_radius_at(Pos(Degree(66.564056), Degree(12), 122)));
+    EXPECT_FLOAT_EQ(6360159, utils::earth_radius_at(Pos(Degree(66.564056), Degree(12), 122)));
 }
 
 TEST(utils, earth_radius_at_2)
 {
-    ASSERT_FLOAT_EQ(6378137.0, utils::earth_radius_at_2(Pos(Degree(0), Degree(12), 0)));
+    EXPECT_FLOAT_EQ(6378137.0, utils::earth_radius_at_2(Pos(Degree(0), Degree(12), 0)));
     // must be 6356752.314, but is not
-    ASSERT_FLOAT_EQ(6360135, utils::earth_radius_at_2(Pos(Degree(66.564056), Degree(12), 122)));
+    EXPECT_FLOAT_EQ(6360135, utils::earth_radius_at_2(Pos(Degree(66.564056), Degree(12), 122)));
 }
 
 TEST(utils, distance_in_meters)
 {
     // distance must be 376099.61 according to https://gps-coordinates.org/distance-between-coordinates.php
     // difference is not high, so will try to use it
-    ASSERT_FLOAT_EQ(376094.41, utils::distance_in_meters(Pos(Degree(35.652832), Degree(139.839478), 0),   // tokyo
+    EXPECT_FLOAT_EQ(376094.41, utils::distance_in_meters(Pos(Degree(35.652832), Degree(139.839478), 0),   // tokyo
                                                          Pos(Degree(35.011665), Degree(135.768326), 0))); // kyoto
 }
 
@@ -42,8 +42,8 @@ TEST(utils, get_angle_to_waypoint)
         imu.orientation.y = 0;
         imu.orientation.z = 0;
 
-        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
-        ASSERT_FLOAT_EQ(0, to_deg(get_angle_to_waypoint(robot, waypoint, imu)));
+        EXPECT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        EXPECT_FLOAT_EQ(0, to_deg(get_angle_to_waypoint(robot, waypoint, imu)));
     }
     // robot looks north, angle to turn is 90 degrees
     {
@@ -55,8 +55,8 @@ TEST(utils, get_angle_to_waypoint)
         imu.orientation.y = 0;
         imu.orientation.z = 0;
 
-        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
-        ASSERT_FLOAT_EQ(90, to_deg(get_angle_to_waypoint(robot, waypoint, imu)));
+        EXPECT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        EXPECT_FLOAT_EQ(90, to_deg(get_angle_to_waypoint(robot, waypoint, imu)));
     }
 }
 
@@ -68,21 +68,21 @@ TEST(utils, get_plane)
         const Vector3D lhv(4, 3, 2);
         const Vector3D rhv(-5, 7, 1);
 
-        ASSERT_EQ(Plane(-11, 14, 43, 146), get_plane(point, lhv, rhv));
+        EXPECT_EQ(Plane(-11, 14, 43, 146), get_plane(point, lhv, rhv));
     }
     {
         const Point point(0, 0, 0);
         const Vector3D lhv(100, 0, 0);
         const Vector3D rhv(0, 3, 0);
 
-        ASSERT_EQ(Plane(0, 0, 300, 0), get_plane(point, lhv, rhv));
+        EXPECT_EQ(Plane(0, 0, 300, 0), get_plane(point, lhv, rhv));
     }
     {
         const Point point(0, 0, 0);
         const Vector3D lhv(100, 0, 0);
         const Vector3D rhv(0, -3, 0);
 
-        ASSERT_EQ(Plane(0, 0, -300, 0), get_plane(point, lhv, rhv));
+        EXPECT_EQ(Plane(0, 0, -300, 0), get_plane(point, lhv, rhv));
     }
 }
 
@@ -90,7 +90,7 @@ TEST(utils, normalize)
 {
     using namespace utils;
     
-    ASSERT_EQ(Vector3D(0, 0, 1), normalize(Vector3D(0, 0, 300)));
+    EXPECT_EQ(Vector3D(0, 0, 1), normalize(Vector3D(0, 0, 300)));
 }
 
 TEST(utils, get_angle_to_waypoint_signed)
@@ -107,8 +107,8 @@ TEST(utils, get_angle_to_waypoint_signed)
         imu.orientation.y = 0;
         imu.orientation.z = 0;
 
-        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
-        ASSERT_FLOAT_EQ(0, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+        EXPECT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        EXPECT_FLOAT_EQ(0, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
     }
     // robot looks north, angle to turn is 90 degrees
     {
@@ -120,8 +120,8 @@ TEST(utils, get_angle_to_waypoint_signed)
         imu.orientation.y = 0;
         imu.orientation.z = 0;
 
-        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
-        ASSERT_FLOAT_EQ(-90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+        EXPECT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        EXPECT_FLOAT_EQ(-90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
     }
     // robot looks north, angle to turn is -90
     {
@@ -133,7 +133,59 @@ TEST(utils, get_angle_to_waypoint_signed)
         imu.orientation.y = 0;
         imu.orientation.z = 0;
 
-        ASSERT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
-        ASSERT_FLOAT_EQ(90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+        EXPECT_FLOAT_EQ(0, to_deg(get_euler_z_angle(imu)));
+        EXPECT_FLOAT_EQ(90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+    }
+    // north to the right of the robot by 45 degree, angle to turn is -45
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(0, 0, 3);
+        sensor_msgs::msg::Imu imu;
+        imu.orientation.w = 0.923879533;
+        imu.orientation.x = 0;
+        imu.orientation.y = 0;
+        imu.orientation.z = 0.382683432;
+
+        EXPECT_FLOAT_EQ(45, to_deg(get_euler_z_angle(imu)));
+        EXPECT_FLOAT_EQ(-45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+    }
+    // north to the right of the robot by 45 degree, angle to turn is 135
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(0, 0, -3);
+        sensor_msgs::msg::Imu imu;
+        imu.orientation.w = 0.923879533;
+        imu.orientation.x = 0;
+        imu.orientation.y = 0;
+        imu.orientation.z = 0.382683432;
+
+        EXPECT_FLOAT_EQ(45, to_deg(get_euler_z_angle(imu)));
+        EXPECT_FLOAT_EQ(135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+    }
+    // north to the left of the robot by 45 degree, angle to turn is -135
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(0, 0, 3);
+        sensor_msgs::msg::Imu imu;
+        imu.orientation.w = 0.923879533;
+        imu.orientation.x = 0;
+        imu.orientation.y = 0;
+        imu.orientation.z = -0.382683432;
+
+        EXPECT_FLOAT_EQ(-45, to_deg(get_euler_z_angle(imu)));
+        EXPECT_FLOAT_EQ(-135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
+    }
+    // north to the left of the robot by 45 degree, angle to turn is 45
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(0, 0, -3);
+        sensor_msgs::msg::Imu imu;
+        imu.orientation.w = 0.923879533;
+        imu.orientation.x = 0;
+        imu.orientation.y = 0;
+        imu.orientation.z = -0.382683432;
+
+        EXPECT_FLOAT_EQ(-45, to_deg(get_euler_z_angle(imu)));
+        EXPECT_FLOAT_EQ(45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, imu)));
     }
 }
