@@ -214,7 +214,8 @@ double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector3D &rhv
  * get_angle_to_waypoint_signed
  * Get angle, which to rotate to robot will face waypoint. The angle is positive when waypoint to the right of the robot
  */
-Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu, const Radian & imu_robot_twist = 0)
+Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu,
+                                    const Radian &imu_robot_twist = 0)
 {
     const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
     const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
@@ -228,6 +229,16 @@ Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &way
     }
 
     return Radian(angle_to_north + rn_wr_angle);
+}
+
+/**
+ * sign
+ * Get sign of a number.
+ * Source: https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
+ */
+template <typename T> int sign(T val)
+{
+    return (T(0) < val) - (val < T(0));
 }
 
 } // end of namespace utils
