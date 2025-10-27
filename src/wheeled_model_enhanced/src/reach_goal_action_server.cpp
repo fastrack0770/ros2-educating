@@ -73,11 +73,11 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 try
                 {
                     RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
-                                                "robot azimuth: " << _storage.robot_azimuth() << ", angular velocity "
-                                                                  << msg.angular_velocity.z);
-                    RCLCPP_INFO_STREAM(get_logger(),
-                                       "robot azimuth: " << _storage.robot_azimuth() << ", angular velocity "
-                                                         << msg.angular_velocity.z); // TODO delete later
+                                                "robot azimuth: " << _storage.robot_azimuth() << ", angle to waypoint "
+                                                                  << _storage.angle_to_waypoint());
+                    // RCLCPP_INFO_STREAM(get_logger(),
+                    //                    "robot azimuth: " << _storage.robot_azimuth() << ", angular velocity "
+                    //                                      << msg.angular_velocity.z); // TODO delete later
                 }
                 catch (const std::exception &e)
                 {
@@ -140,8 +140,8 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 const auto start_point = rclcpp::Clock().now();
 
                 // calculate distances to turn to
-                const double a_max = 0.7578157407407407;       // rad/sec^2, obtained empirically
-                const double v_max = 0.818441;                 // rad/sec, obtained empirically
+                const double a_max = 2;       // rad/sec^2, obtained empirically
+                const double v_max = 1;                        // rad/sec
                 const auto s_ac = pow(v_max, 2) / (2 * a_max); // distance, after which the velocity will become maximum
                 const auto angle_to_waypoint = _storage.angle_to_waypoint();
                 std::thread control_thread;
@@ -152,89 +152,39 @@ class ReachGoalActionServerNode : public rclcpp::Node
                     return;
                 }
 
-                if (s_ac * 2 >= angle_to_waypoint.value())
-                {
-                    const auto half_distance = abs(angle_to_waypoint.value() / 2);
-                    const auto velocity_to_set =
-                        sqrt(half_distance * 2 * a_max) * utils::sign(angle_to_waypoint.value());
-                    const auto acceleration_time =
-                        abs(velocity_to_set / a_max); // after that time we need to set velocity to zero
+                const auto velocity_to_set = v_max * utils::sign(angle_to_waypoint.value());
 
-                    RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity " << velocity_to_set
-                                                                << ", acceleration time " << acceleration_time
-                                                                << ", north angle " << _storage.robot_azimuth());
+                RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity " << velocity_to_set
+                                                            << ", north angle " << _storage.robot_azimuth());
+
+                {
+                    geometry_msgs::msg::Twist msg_to_pub;
+                    msg_to_pub.angular.z =
+                        velocity_to_set * (-1); // TODO move msg sending to the method to hide -1 multiplying
+                    _speed_pub->publish(msg_to_pub);
+                    RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << velocity_to_set);
+                }
+
+                control_thread = std::thread([this, start_point, angle_to_waypoint, s_ac]() {
+                    rclcpp::Rate loop_rate(60); // TODO find exact number
+                    while (_is_running and abs(_storage.angle_to_waypoint().value()) > s_ac)
+                    {
+                        loop_rate.sleep();
+                    }
+
+                    if (not _is_running)
+                    {
+                        RCLCPP_INFO_STREAM(get_logger(), "Stop executing inner thread due goal is cancelled");
+                        return;
+                    }
 
                     {
                         geometry_msgs::msg::Twist msg_to_pub;
-                        msg_to_pub.angular.z =
-                            velocity_to_set * (-1); // TODO move msg sending to the method to hide -1 multiplying
+                        msg_to_pub.angular.z = 0;
                         _speed_pub->publish(msg_to_pub);
-                        RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << velocity_to_set);
+                        RCLCPP_INFO_STREAM(get_logger(), "Set velocity to 0");
                     }
-
-                    control_thread = std::thread([this, acceleration_time, start_point]() {
-                        rclcpp::Rate loop_rate(60); // TODO find exact number
-                        while (_is_running and
-                               rclcpp::Clock().now() - start_point < std::chrono::duration<double>(acceleration_time))
-                        {
-                            loop_rate.sleep();
-                        }
-
-                        if (not _is_running)
-                        {
-                            RCLCPP_INFO_STREAM(get_logger(), "Stop executing inner thread due goal is cancelled");
-                            return;
-                        }
-
-                        {
-                            geometry_msgs::msg::Twist msg_to_pub;
-                            msg_to_pub.angular.z = 0;
-                            _speed_pub->publish(msg_to_pub);
-                            RCLCPP_INFO_STREAM(get_logger(), "Set velocity to 0");
-                        }
-                    });
-                }
-                else
-                {
-                    const auto acceleration_time = v_max / a_max;
-                    const auto time_with_max_speed = (abs(angle_to_waypoint.value()) - 2 * s_ac) / v_max;
-                    const auto time_before_stopping = acceleration_time + time_with_max_speed;
-                    const auto velocity_to_set = v_max * utils::sign(angle_to_waypoint.value());
-
-                    RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity " << velocity_to_set
-                                                                << ", time_before_stopping " << time_before_stopping
-                                                                << ", north angle " << _storage.robot_azimuth());
-
-                    {
-                        geometry_msgs::msg::Twist msg_to_pub;
-                        msg_to_pub.angular.z = velocity_to_set * (-1);
-                        _speed_pub->publish(msg_to_pub);
-                        RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << velocity_to_set);
-                    }
-
-                    // TODO duplication - can make it better
-                    control_thread = std::thread([this, time_before_stopping, start_point]() {
-                        rclcpp::Rate loop_rate(60); // TODO find exact number
-                        while (_is_running and rclcpp::Clock().now() - start_point <
-                                                   std::chrono::duration<double>(time_before_stopping))
-                        {
-                            loop_rate.sleep();
-                        }
-
-                        if (not _is_running)
-                        {
-                            RCLCPP_INFO_STREAM(get_logger(), "Stop executing inner thread due goal is cancelled");
-                            return;
-                        }
-
-                        {
-                            geometry_msgs::msg::Twist msg_to_pub;
-                            msg_to_pub.angular.z = 0;
-                            _speed_pub->publish(msg_to_pub);
-                            RCLCPP_INFO_STREAM(get_logger(), "Set velocity to 0");
-                        }
-                    });
-                }
+                });
 
                 while (_is_running and not is_goal_reached())
                 {
