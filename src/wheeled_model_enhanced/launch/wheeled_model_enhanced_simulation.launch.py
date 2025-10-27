@@ -30,6 +30,7 @@ simulation = ExecuteProcess(
 
 
 def generate_launch_description():
+
     return LaunchDescription(
         [
             SetEnvironmentVariable(
@@ -47,7 +48,7 @@ def generate_launch_description():
                     "/wheeled_model_enhanced/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat",
                     "/waypoint/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat",
                     "/model/wheeled_model_enhanced/odometry@nav_msgs/msg/Odometry[ignition.msgs.Odometry",
-                    "/model/wheeled_model_enhanced/tf@geometry_msgs/msg/PoseArray[ignition.msgs.Pose_V"
+                    "/model/wheeled_model_enhanced/tf@geometry_msgs/msg/PoseArray[ignition.msgs.Pose_V",
                 ],
                 remappings=[
                     ("/model/wheeled_model_enhanced/cmd_vel", "cmd_vel"),

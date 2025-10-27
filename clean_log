@@ -1,0 +1,21 @@
+#!/bin/bash
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 \"pattern1\" \"pattern2\" ... filename" >&2
+    exit 1
+fi
+
+# Get filename (last argument)
+filename="${!#}"
+
+if [ ! -f "$filename" ]; then
+    echo "Error: File '$filename' not found" >&2
+    exit 1
+fi
+
+# Apply each pattern except the last argument (which is filename)
+for ((i=1; i<$#; i++)); do
+    pattern="${!i}"
+    sed -i "/$pattern/d" "$filename"
+done

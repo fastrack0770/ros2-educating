@@ -95,9 +95,9 @@ class Storage
         const std::lock_guard<decltype(_m)> lock(_m);
 
         _imu = imu;
-        // TODO refactor - imu_robot_twist must be defined only in one place
+
         _angle_to_waypoint =
-            utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, _imu, _robot_imu_twist);
+            utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, robot_azimuth());
     }
 
     Radian angle_to_waypoint() const noexcept

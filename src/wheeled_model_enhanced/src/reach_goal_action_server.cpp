@@ -151,13 +151,18 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 if (s_ac * 2 >= angle_to_waypoint.value())
                 {
                     const auto half_distance = abs(angle_to_waypoint.value() / 2);
-                    const auto velocity_to_set = sqrt(half_distance * 2 * a_max);
+                    const auto velocity_to_set =
+                        sqrt(half_distance * 2 * a_max) * utils::sign(angle_to_waypoint.value());
                     const auto acceleration_time =
-                        velocity_to_set / a_max; // after that time we need to set velocity to zero
+                        abs(velocity_to_set / a_max); // after that time we need to set velocity to zero
+
+                    RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity " << velocity_to_set
+                                                                << ", acceleration time " << acceleration_time
+                                                                << ", north angle " << _storage.robot_azimuth());
 
                     {
                         geometry_msgs::msg::Twist msg_to_pub;
-                        msg_to_pub.angular.z = velocity_to_set * utils::sign(angle_to_waypoint.value());
+                        msg_to_pub.angular.z = velocity_to_set * (-1);
                         _speed_pub->publish(msg_to_pub);
                         RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << velocity_to_set);
                     }
@@ -189,10 +194,15 @@ class ReachGoalActionServerNode : public rclcpp::Node
                     const auto acceleration_time = v_max / a_max;
                     const auto time_with_max_speed = (abs(angle_to_waypoint.value()) - 2 * s_ac) / v_max;
                     const auto time_before_stopping = acceleration_time + time_with_max_speed;
+                    const auto velocity_to_set = v_max * utils::sign(angle_to_waypoint.value());
+
+                    RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity " << velocity_to_set
+                                                                << ", time_before_stopping " << time_before_stopping
+                                                                << ", north angle " << _storage.robot_azimuth());
 
                     {
                         geometry_msgs::msg::Twist msg_to_pub;
-                        msg_to_pub.angular.z = v_max * utils::sign(angle_to_waypoint.value());
+                        msg_to_pub.angular.z = velocity_to_set * (-1);
                         _speed_pub->publish(msg_to_pub);
                     }
 
@@ -249,8 +259,6 @@ class ReachGoalActionServerNode : public rclcpp::Node
             });
 
             thread.detach();
-
-            RCLCPP_INFO_STREAM(get_logger(), "thread is joinable - " << thread.joinable());
         };
         _action_server = rclcpp_action::create_server<ReachGoalAction>(this, "reach_goal", handle_goal, handle_cancel,
                                                                        handle_accepted);

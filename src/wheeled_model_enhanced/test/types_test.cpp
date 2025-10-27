@@ -14,6 +14,11 @@ TEST(types, radian)
         constexpr double value = 123;
         ASSERT_FLOAT_EQ(2.14675498, Radian(Degree(value)).value());
     }
+    // Radian normalize() const noexcept
+    {
+        constexpr double value = 7.783185307179586;
+        ASSERT_FLOAT_EQ(1.5, Radian(value).normalize().value());
+    }
 }
 
 TEST(types, degree)

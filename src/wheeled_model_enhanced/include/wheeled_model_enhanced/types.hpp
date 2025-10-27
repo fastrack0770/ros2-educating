@@ -19,28 +19,78 @@ class Degree;
 class Radian
 {
   public:
-    Radian(double value) : _value(value)
+    constexpr Radian(double value) : _value(value)
     {
     }
 
-    Radian(Degree value);
+    constexpr Radian(Degree value);
 
-    double value() const noexcept
+    constexpr double value() const noexcept
     {
         return _value;
     }
 
-    bool operator==(const Radian &rhv) const noexcept
+    constexpr friend Radian operator+(Radian lhv, const Radian &rhv)
+    {
+        return lhv._value + rhv._value;
+    }
+
+    constexpr Radian &operator+=(const Radian &rhv)
+    {
+        _value += rhv._value;
+        return *this;
+    }
+
+    constexpr friend Radian operator-(Radian lhv, const Radian &rhv)
+    {
+        return lhv._value - rhv._value;
+    }
+
+    constexpr Radian &operator-=(const Radian &rhv)
+    {
+        _value -= rhv._value;
+        return *this;
+    }
+
+    constexpr bool operator==(const Radian &rhv) const noexcept
     {
         return _value == rhv._value;
     }
 
-    bool operator!=(const Radian &rhv) const noexcept
+    constexpr bool operator!=(const Radian &rhv) const noexcept
     {
         return !(*this == rhv);
     }
 
-    
+    constexpr bool operator<(const Radian &rhv) const noexcept
+    {
+        return _value < rhv._value;
+    }
+
+    constexpr bool operator>=(const Radian &rhv) const noexcept
+    {
+        return !(*this < rhv);
+    }
+
+    constexpr bool operator>(const Radian &rhv) const noexcept
+    {
+        return _value > rhv._value;
+    }
+
+    constexpr bool operator<=(const Radian &rhv) const noexcept
+    {
+        return !(*this > rhv);
+    }
+
+    constexpr bool operator<(const Degree &rhv) const noexcept;
+    constexpr bool operator>=(const Degree &rhv) const noexcept;
+    constexpr bool operator>(const Degree &rhv) const noexcept;
+    constexpr bool operator<=(const Degree &rhv) const noexcept;
+
+    Radian normalize() const noexcept
+    {
+        return std::fmod(_value, 2 * M_PI);
+    }
 
     friend std::ostream &operator<<(std::ostream &os, const Radian &rhv);
 
@@ -60,25 +110,30 @@ inline std::ostream &operator<<(std::ostream &os, const Radian &rhv)
 class Degree
 {
   public:
-    Degree(double value) : _value(value)
+    constexpr Degree(double value) : _value(value)
     {
     }
 
-    Degree(Radian value) : _value(value.value() * 180 / M_PI)
+    constexpr Degree(Radian value) : _value(value.value() * 180 / M_PI)
     {
     }
 
-    double value() const noexcept
+    constexpr double value() const noexcept
     {
         return _value;
     }
 
-    bool operator==(const Degree &rhv) const noexcept
+    constexpr Radian normalize() const noexcept
+    {
+        return std::fmod(_value, 360);
+    }
+
+    constexpr bool operator==(const Degree &rhv) const noexcept
     {
         return _value == rhv._value;
     }
 
-    bool operator!=(const Degree &rhv) const noexcept
+    constexpr bool operator!=(const Degree &rhv) const noexcept
     {
         return !(*this == rhv);
     }
@@ -87,8 +142,28 @@ class Degree
     double _value;
 };
 
-inline Radian::Radian(Degree value) : _value(value.value() * M_PI / 180.0)
+inline constexpr Radian::Radian(Degree value) : _value(value.value() * M_PI / 180.0)
 {
+}
+
+constexpr bool Radian::operator<(const Degree &rhv) const noexcept
+{
+    return _value < Radian(rhv)._value;
+}
+
+constexpr bool Radian::operator>=(const Degree &rhv) const noexcept
+{
+    return !(*this < rhv);
+}
+
+constexpr bool Radian::operator>(const Degree &rhv) const noexcept
+{
+    return _value > Radian(rhv)._value;
+}
+
+constexpr bool Radian::operator<=(const Degree &rhv) const noexcept
+{
+    return !(*this > rhv);
 }
 
 class Kilometer;
