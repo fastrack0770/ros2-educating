@@ -72,8 +72,12 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                 try
                 {
-                    RCLCPP_DEBUG_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
-                                                 "robot azimuth: " << _storage.robot_azimuth());
+                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
+                                                "robot azimuth: " << _storage.robot_azimuth() << ", angular velocity "
+                                                                  << msg.angular_velocity.z);
+                    RCLCPP_INFO_STREAM(get_logger(),
+                                       "robot azimuth: " << _storage.robot_azimuth() << ", angular velocity "
+                                                         << msg.angular_velocity.z); // TODO delete later
                 }
                 catch (const std::exception &e)
                 {
@@ -136,9 +140,9 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 const auto start_point = rclcpp::Clock().now();
 
                 // calculate distances to turn to
-                const double a_max = 2;                      // rad/sec^2 ???
-                const double v_max = 1;                      // rad/sec   ???
-                const auto s_ac = pow(v_max, 2) / 2 * a_max; // distance, after which the velocity will become maximum
+                const double a_max = 0.7578157407407407;       // rad/sec^2, obtained empirically
+                const double v_max = 0.818441;                 // rad/sec, obtained empirically
+                const auto s_ac = pow(v_max, 2) / (2 * a_max); // distance, after which the velocity will become maximum
                 const auto angle_to_waypoint = _storage.angle_to_waypoint();
                 std::thread control_thread;
 
@@ -162,7 +166,8 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                     {
                         geometry_msgs::msg::Twist msg_to_pub;
-                        msg_to_pub.angular.z = velocity_to_set * (-1);
+                        msg_to_pub.angular.z =
+                            velocity_to_set * (-1); // TODO move msg sending to the method to hide -1 multiplying
                         _speed_pub->publish(msg_to_pub);
                         RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << velocity_to_set);
                     }
@@ -204,6 +209,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
                         geometry_msgs::msg::Twist msg_to_pub;
                         msg_to_pub.angular.z = velocity_to_set * (-1);
                         _speed_pub->publish(msg_to_pub);
+                        RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << velocity_to_set);
                     }
 
                     // TODO duplication - can make it better
@@ -225,6 +231,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
                             geometry_msgs::msg::Twist msg_to_pub;
                             msg_to_pub.angular.z = 0;
                             _speed_pub->publish(msg_to_pub);
+                            RCLCPP_INFO_STREAM(get_logger(), "Set velocity to 0");
                         }
                     });
                 }
