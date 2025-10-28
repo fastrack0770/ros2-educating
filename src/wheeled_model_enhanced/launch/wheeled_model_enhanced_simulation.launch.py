@@ -60,7 +60,12 @@ def generate_launch_description():
                 package="wheeled_model_enhanced",
                 executable="reach_goal_action_server",
                 name="reach_goal_action_server_node",
-                parameters=[],
+                parameters=[
+                    {"angle_threshold": 0.05},
+                    {"distance_threshold": 0.1},
+                    {"max_angle_acceleration": 2.0},
+                    {"max_angle_velocity": 1},
+                ],
             ),
             # Actually doesnt work. There are three copies of Node above that are created, and OnProcessExist kills only one of them
             # Btw if stop the simulation by Ctrl+C, all three copies will stop gracefully

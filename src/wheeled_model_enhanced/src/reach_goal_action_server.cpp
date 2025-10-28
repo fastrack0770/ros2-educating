@@ -14,11 +14,32 @@
 using ReachGoalAction = wheeled_model_enhanced::action::ReachGoal;
 using GoalHandle = rclcpp_action::ServerGoalHandle<ReachGoalAction>;
 
+namespace params
+{
+constexpr const char *angle_threshold = "angle_threshold";
+constexpr const double angle_threshold_default = 0.05;
+
+constexpr const char *distance_threshold = "distance_threshold";
+constexpr const double distance_threshold_default = 0.5;
+
+constexpr const char *max_angle_acceleration = "max_angle_acceleration";
+constexpr const double max_angle_acceleration_default = 2;
+
+constexpr const char *max_angle_velocity = "max_angle_velocity";
+constexpr const double max_angle_velocity_default = 1;
+} // end of namespace params
+
 class ReachGoalActionServerNode : public rclcpp::Node
 {
   public:
     ReachGoalActionServerNode() : Node("reach_goal_action_server_node")
     {
+        // parameters
+        declare_parameter<double>(params::angle_threshold, params::angle_threshold_default);
+        declare_parameter<double>(params::distance_threshold, params::distance_threshold_default);
+        declare_parameter<double>(params::max_angle_acceleration, params::max_angle_acceleration_default);
+        declare_parameter<double>(params::max_angle_velocity, params::max_angle_velocity_default);
+
         // robot navsat sub
         {
             const auto callback = [this](const sensor_msgs::msg::NavSatFix &msg) {
@@ -133,8 +154,8 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 const auto start_point = rclcpp::Clock().now();
 
                 // calculate distances to turn to
-                const double a_max = 2;                        // rad/sec^2
-                const double v_max = 1;                        // rad/sec
+                const auto a_max = get_parameter(params::max_angle_acceleration).as_double(); // rad/sec^2
+                const auto v_max = get_parameter(params::max_angle_velocity).as_double();     // rad/sec
                 const auto s_ac = pow(v_max, 2) / (2 * a_max); // distance, after which the velocity will become maximum
                 const auto angle_to_waypoint = _storage.angle_to_waypoint();
                 std::thread control_thread;
@@ -145,11 +166,11 @@ class ReachGoalActionServerNode : public rclcpp::Node
                     return;
                 }
 
-                control_thread = std::thread([this, start_point, angle_to_waypoint, v_max, s_ac]() {
-                    rclcpp::Rate loop_rate(60); // TODO find exact number
+                if (not is_angle_reached())
+                {
+                    control_thread = std::thread([this, start_point, angle_to_waypoint, v_max, s_ac]() {
+                        rclcpp::Rate loop_rate(60);
 
-                    while (_is_running and not is_angle_reached())
-                    {
                         const auto velocity_to_set = v_max * utils::sign(angle_to_waypoint.value());
 
                         RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity "
@@ -161,17 +182,22 @@ class ReachGoalActionServerNode : public rclcpp::Node
                         while (_is_running and abs(_storage.angle_to_waypoint().value()) > s_ac)
                         {
                             loop_rate.sleep();
-                        }
+                        }   
 
                         if (not _is_running)
                         {
                             RCLCPP_INFO_STREAM(get_logger(), "Stop executing inner thread due goal is cancelled");
+                            set_robot_angle_speed(0);
                             return;
                         }
 
                         set_robot_angle_speed(0);
-                    }
-                });
+                    });
+                }
+                else
+                {
+                    RCLCPP_INFO_STREAM(get_logger(), "Goal is already reached");
+                }
 
                 while (_is_running and not is_angle_reached())
                 {
@@ -226,16 +252,14 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
     bool is_angle_reached() const noexcept
     {
-        // TODO get acceptable range from action server parameters
-        constexpr Radian acceptable_range = 0.1;
+        const auto acceptable_range = Radian(get_parameter(params::angle_threshold).as_double());
 
         return _storage.angle_to_waypoint() <= acceptable_range;
     }
 
     bool is_goal_reached() const noexcept
     {
-        // TODO get acceptable range from action server parameters
-        constexpr Meter acceptable_range = 1;
+        const auto acceptable_range = Meter(get_parameter(params::distance_threshold).as_double());
 
         return _storage.distance_to_waypoint_gps() <= acceptable_range;
     }
