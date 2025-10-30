@@ -65,7 +65,7 @@ def generate_launch_description():
                     {"distance_threshold": 0.1},
                     {"max_angle_acceleration": 2.0},
                     {"max_angle_velocity": 1.0},
-                    {"robot_imu_twist": -1.5707963267948966},
+                    {"robot_imu_twist": 1.5707963267948966},
                 ],
                 # prefix=['gdbserver localhost:3000'] # Left for debugging purposes
             ),

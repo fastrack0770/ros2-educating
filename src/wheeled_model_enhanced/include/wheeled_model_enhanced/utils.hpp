@@ -207,7 +207,7 @@ Vector3D normalize(Vector3D vec)
  */
 double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector3D &rhv)
 {
-    return atan2((lhv ^ rhv) * Vector3D(0, 1, 0) /* the plane normal pointing up */, lhv * rhv);
+    return atan2((rhv ^ lhv) * Vector3D(0, 1, 0) /* the plane normal pointing up */, lhv * rhv);
 }
 
 /**
@@ -219,11 +219,16 @@ Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &way
     const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
     const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
 
-    const auto rn_wr_angle = get_angle_between_vectors_signed(rn_vec, wr_vec);
+    auto rn_wr_angle = get_angle_between_vectors_signed(rn_vec, wr_vec);
 
     if (std::isnan(rn_wr_angle)) // angle between two vectors is 0
     {
         return robot_azimuth;
+    }
+
+    if (rn_wr_angle < 0)
+    {
+        rn_wr_angle += 2 * M_PI;
     }
 
     auto target_angle = Radian(robot_azimuth + rn_wr_angle).normalize();

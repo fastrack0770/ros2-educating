@@ -30,7 +30,7 @@ constexpr const double max_angle_velocity_default = 1;
 
 // Difference between the IMU sensor's x axe and the robot forward direction
 constexpr const char *robot_imu_twist = "robot_imu_twist";
-constexpr const double robot_imu_twist_default = -1.5707963267948966; // -90 in degrees
+constexpr const double robot_imu_twist_default = 1.5707963267948966; // 90 in degrees
 } // end of namespace params
 
 class ReachGoalActionServerNode : public rclcpp::Node
@@ -54,13 +54,15 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                 try
                 {
-                    RCLCPP_DEBUG_STREAM(get_logger(), std::setprecision(8) << "ROBOT gps: " << _storage.robot_gps_pos()
-                                                                           << ", topoc: " << _storage.robot_topo_pos());
-                    RCLCPP_DEBUG_STREAM(get_logger(),
-                                        std::setprecision(8)
-                                            << "distance gps: " << _storage.distance_to_waypoint_gps()
-                                            << ", related: " << _storage.distance_to_waypoint_related()
-                                            << ", angle: " << Degree(_storage.angle_to_waypoint()).value());
+                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
+                                                         << "ROBOT gps: " << _storage.robot_gps_pos()
+                                                         << ", topoc: " << _storage.robot_topo_pos()
+                                                         << ", related: " << _storage.robot_related_pos());
+                    RCLCPP_INFO_STREAM(get_logger(),
+                                       std::setprecision(8)
+                                           << "distance gps: " << _storage.distance_to_waypoint_gps()
+                                           << ", related: " << _storage.distance_to_waypoint_related()
+                                           << ", angle: " << Degree(_storage.angle_to_waypoint()).value());
                 }
                 catch (const std::exception &e)
                 {
@@ -79,10 +81,10 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                 try
                 {
-                    RCLCPP_DEBUG_STREAM(get_logger(), std::setprecision(8)
-                                                          << "WAYPOINT gps: " << _storage.waypoint_gps_pos()
-                                                          << ", topoc: " << _storage.waypoint_topo_pos()
-                                                          << ", related: " << _storage.waypoint_related_pos());
+                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
+                                                         << "WAYPOINT gps: " << _storage.waypoint_gps_pos()
+                                                         << ", topoc: " << _storage.waypoint_topo_pos()
+                                                         << ", related: " << _storage.waypoint_related_pos());
                 }
                 catch (const std::exception &e)
                 {
@@ -257,7 +259,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
     {
         const auto acceptable_range = Radian(get_parameter(params::angle_threshold).as_double());
 
-        return _storage.angle_to_waypoint() <= acceptable_range;
+        return abs(_storage.angle_to_waypoint().value()) <= acceptable_range.value();
     }
 
     bool is_goal_reached() const noexcept

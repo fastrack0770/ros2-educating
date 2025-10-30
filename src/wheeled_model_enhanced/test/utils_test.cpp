@@ -104,46 +104,90 @@ TEST(utils, get_angle_to_waypoint_signed)
 
         EXPECT_FLOAT_EQ(0, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(0)).value()));
     }
+    // robot looks north, angle to turn is 0 degrees
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(-15, 0, 0);
+
+        EXPECT_FLOAT_EQ(180, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(0)).value()));
+    }
     // robot looks north, angle to turn is 90 degrees
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, 3);
 
-        EXPECT_FLOAT_EQ(-90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(0)).value()));
+        EXPECT_FLOAT_EQ(90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(0)).value()));
     }
     // robot looks north, angle to turn is -90
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, -3);
         
-        EXPECT_FLOAT_EQ(90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(0)).value()));
+        EXPECT_FLOAT_EQ(-90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(0)).value()));
     }
     // north to the right of the robot by 45 degree, angle to turn is -45
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, 3);
         
-        EXPECT_FLOAT_EQ(-45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(45)).value()));
+        EXPECT_FLOAT_EQ(135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(45)).value()));
     }
     // north to the right of the robot by 45 degree, angle to turn is 135
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, -3);
         
-        EXPECT_FLOAT_EQ(135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(45)).value()));
+        EXPECT_FLOAT_EQ(-45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(45)).value()));
     }
     // north to the left of the robot by 45 degree, angle to turn is -135
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, 3);
         
-        EXPECT_FLOAT_EQ(-135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(-45)).value()));
+        EXPECT_FLOAT_EQ(45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(-45)).value()));
     }
     // north to the left of the robot by 45 degree, angle to turn is 45
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, -3);
         
-        EXPECT_FLOAT_EQ(45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(-45)).value()));
+        EXPECT_FLOAT_EQ(-135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(-45)).value()));
     }
+    // waypoint to the left
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(-9.4050172, 0.68499405, -0.20115671); // { x: -9.4050172 y: 0.68499405 z: -0.20115671}
+        const Radian robot_azimuth(1.5708);
+
+        EXPECT_FLOAT_EQ(-88.774521, to_deg(get_angle_to_waypoint_signed(robot, waypoint,robot_azimuth).value()));
+    }
+    // waypoint to the right
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(9.4050172, 0.68499405, -0.20115671);
+        const Radian robot_azimuth(1.5708);
+
+        EXPECT_FLOAT_EQ(88.77494, to_deg(get_angle_to_waypoint_signed(robot, waypoint,robot_azimuth).value()));
+    }
+    // angle to waypoint is 135
+    {
+        const Cartesian robot(0, 0, 0);
+        const Cartesian waypoint(9.6874266, 0.68499405, 9.9239567);
+        const Radian robot_azimuth(1.5708);
+
+        EXPECT_FLOAT_EQ(135.69121, to_deg(get_angle_to_waypoint_signed(robot, waypoint,robot_azimuth).value()));
+    }
+}
+
+TEST(utils, get_angle_between_vectors_signed)
+{
+    using namespace utils;
+
+    const Cartesian robot(0, 0, 0);
+    const Cartesian waypoint(9.6874266, 0.68499405, 9.9239567);
+    const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
+    const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
+
+    auto rn_wr_angle = get_angle_between_vectors_signed(rn_vec, wr_vec);
+    EXPECT_FLOAT_EQ(45.691002, to_deg(rn_wr_angle));
 }
