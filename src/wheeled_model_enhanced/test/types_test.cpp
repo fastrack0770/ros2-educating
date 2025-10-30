@@ -120,10 +120,11 @@ TEST(types, pos)
         ASSERT_FLOAT_EQ(0.7, pos.altitude().value()) << pos;
 
         pos.setLatitude(0.5);
-        ASSERT_FLOAT_EQ(0.5, pos.latitude().value());
         pos.setLongitude(0.6);
-        ASSERT_FLOAT_EQ(0.6, pos.longitude().value());
         pos.setAltitude(0.7);
+
+        ASSERT_FLOAT_EQ(0.5, pos.latitude().value());
+        ASSERT_FLOAT_EQ(0.6, pos.longitude().value());
         ASSERT_FLOAT_EQ(0.7, pos.altitude().value());
     }
 }

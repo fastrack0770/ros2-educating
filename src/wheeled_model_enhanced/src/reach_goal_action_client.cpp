@@ -42,7 +42,7 @@ class ReachGoalActionClientNode : public rclcpp::Node
             }
             else
             {
-                RCLCPP_INFO_STREAM(get_logger(), "Goal accepted");
+                RCLCPP_INFO_STREAM(get_logger(), "Goal was accepted");
             }
         };
         send_goal_options.goal_response_callback = goal_callback;
@@ -61,7 +61,7 @@ class ReachGoalActionClientNode : public rclcpp::Node
                 break;
             case rclcpp_action::ResultCode::CANCELED:
             case rclcpp_action::ResultCode::ABORTED:
-                RCLCPP_INFO_STREAM(get_logger(), "Goal canceled/aborted");
+                RCLCPP_INFO_STREAM(get_logger(), "Goal was canceled/aborted");
                 break;
             default:
                 RCLCPP_INFO_STREAM(get_logger(), "Unknown");

@@ -95,7 +95,7 @@ class Radian
     friend std::ostream &operator<<(std::ostream &os, const Radian &rhv);
 
   private:
-    double _value;
+    double _value = 0.f;
 };
 
 inline std::ostream &operator<<(std::ostream &os, const Radian &rhv)
@@ -139,7 +139,7 @@ class Degree
     }
 
   private:
-    double _value;
+    double _value = 0.f;
 };
 
 inline constexpr Radian::Radian(Degree value) : _value(value.value() * M_PI / 180.0)
@@ -290,7 +290,7 @@ class Meter
     }
 
   private:
-    double _value;
+    double _value = 0.f;
 };
 
 /**
@@ -324,7 +324,7 @@ class Kilometer
     }
 
   private:
-    double _value;
+    double _value = 0.f;
 };
 
 inline constexpr Meter::Meter(Kilometer value) : _value(value.value() * 1000)

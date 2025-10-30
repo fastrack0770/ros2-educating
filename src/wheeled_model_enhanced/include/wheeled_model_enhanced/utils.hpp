@@ -228,6 +228,7 @@ Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &way
 
     auto target_angle = Radian(robot_azimuth + rn_wr_angle).normalize();
 
+    // finding the shortest way to turn
     if (target_angle < Degree(180))
     {
         target_angle += Radian(2 * M_PI);
@@ -242,7 +243,7 @@ Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &way
 
 /**
  * sign
- * Get sign of a number.
+ * Get a sign of a number.
  * Source: https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
  */
 template <typename T> int sign(T val)

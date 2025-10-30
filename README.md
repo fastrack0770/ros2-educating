@@ -27,6 +27,8 @@ Contains:
 3. reach_goal_action_server node to move the robot around
 
 ### Models
+All models was created by using gazebo model editor.  
+
 #### wheeled_model_enhanced
 It's a robot with four wheels on its chassis. The front of the robot contains a rod with a camera on it. In the middle of the top of the chassis there is a sensor block. The sensor block contains:  
 1. IMU sensor

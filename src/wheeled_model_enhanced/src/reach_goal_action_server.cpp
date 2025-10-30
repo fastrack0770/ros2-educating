@@ -194,13 +194,6 @@ class ReachGoalActionServerNode : public rclcpp::Node
                             loop_rate.sleep();
                         }
 
-                        if (not _is_running)
-                        {
-                            RCLCPP_INFO_STREAM(get_logger(), "Stop executing inner thread due goal is cancelled");
-                            set_robot_angle_speed(0);
-                            return;
-                        }
-
                         set_robot_angle_speed(0);
                     });
                 }
