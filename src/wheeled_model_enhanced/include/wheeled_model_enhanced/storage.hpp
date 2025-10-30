@@ -46,11 +46,8 @@ class Storage
         // do related calculations
         _robot_pos.topo_pos = utils::get_topo(_robot_pos.gps_pos, _robot_pos.gps_pos);
 
-        _waypoint_pos.topo_pos = utils::get_topo(_waypoint_pos.gps_pos, _robot_pos.gps_pos);
-        _waypoint_pos.related_pos = _waypoint_pos.topo_pos - _robot_pos.topo_pos;
-
-        _distance_to_waypoint_gps = utils::distance(_robot_pos.gps_pos, _waypoint_pos.gps_pos);
-        _distance_to_waypoint_related = utils::distance(_robot_pos.related_pos, _waypoint_pos.related_pos);
+        calculate_waypoint_coords();
+        calculate_distances();
     }
 
     Pos waypoint_gps_pos() const noexcept
@@ -78,11 +75,8 @@ class Storage
         _waypoint_pos.gps_pos = msg;
 
         // do related calculations
-        _waypoint_pos.topo_pos = utils::get_topo(_waypoint_pos.gps_pos, _robot_pos.gps_pos);
-        _waypoint_pos.related_pos = _waypoint_pos.topo_pos - _robot_pos.topo_pos;
-
-        _distance_to_waypoint_gps = utils::distance(_robot_pos.gps_pos, _waypoint_pos.gps_pos);
-        _distance_to_waypoint_related = utils::distance(_robot_pos.related_pos, _waypoint_pos.related_pos);
+        calculate_waypoint_coords();
+        calculate_distances();
     }
 
     Meter distance_to_waypoint_gps() const noexcept
@@ -135,6 +129,26 @@ class Storage
             utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, robot_azimuth());
     }
 
+    void set_robot_length(Meter length)
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        _robot_length = length;
+    }
+
+  private:
+    void calculate_waypoint_coords()
+    {
+        _waypoint_pos.topo_pos = utils::get_topo(_waypoint_pos.gps_pos, _robot_pos.gps_pos);
+        _waypoint_pos.related_pos = _waypoint_pos.topo_pos - _robot_pos.topo_pos;
+    }
+    void calculate_distances()
+    {
+        _distance_to_waypoint_gps = utils::distance(_robot_pos.gps_pos, _waypoint_pos.gps_pos) - _robot_length;
+        _distance_to_waypoint_related =
+            utils::distance(_robot_pos.related_pos, _waypoint_pos.related_pos) - _robot_length;
+    }
+
   private:
     mutable std::recursive_mutex _m;
 
@@ -146,5 +160,6 @@ class Storage
     sensor_msgs::msg::Imu _imu;
     Radian _angle_to_waypoint = 0.f;
 
-    Radian _robot_imu_twist = Degree(-90);
+    Radian _robot_imu_twist = Degree(90);
+    Meter _robot_length = 1.5;
 };

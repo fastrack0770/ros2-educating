@@ -31,6 +31,15 @@ constexpr const double max_angle_velocity_default = 1;
 // Difference between the IMU sensor's x axe and the robot forward direction
 constexpr const char *robot_imu_twist = "robot_imu_twist";
 constexpr const double robot_imu_twist_default = 1.5707963267948966; // 90 in degrees
+
+constexpr const char *max_acceleration = "max_acceleration";
+constexpr const double max_acceleration_default = 1;
+
+constexpr const char *max_velocity = "max_velocity";
+constexpr const double max_velocity_default = 10;
+
+constexpr const char *robot_length_in_m = "robot_length_in_m";
+constexpr const double robot_length_in_m_default = 1.5;
 } // end of namespace params
 
 class ReachGoalActionServerNode : public rclcpp::Node
@@ -44,8 +53,12 @@ class ReachGoalActionServerNode : public rclcpp::Node
         declare_parameter<double>(params::max_angle_acceleration, params::max_angle_acceleration_default);
         declare_parameter<double>(params::max_angle_velocity, params::max_angle_velocity_default);
         declare_parameter<double>(params::robot_imu_twist, params::robot_imu_twist_default);
+        declare_parameter<double>(params::max_acceleration, params::max_acceleration_default);
+        declare_parameter<double>(params::max_velocity, params::max_velocity_default);
+        declare_parameter<double>(params::robot_length_in_m, params::robot_length_in_m_default);
 
         _storage.set_robot_imu_twist(get_parameter(params::robot_imu_twist).as_double());
+        _storage.set_robot_length(get_parameter(params::robot_length_in_m).as_double());
 
         // robot navsat sub
         {
@@ -145,15 +158,13 @@ class ReachGoalActionServerNode : public rclcpp::Node
             _is_running = false;
 
             set_robot_angle_speed(0);
+            set_robot_speed(0);
 
             return rclcpp_action::CancelResponse::ACCEPT;
         };
         const auto handle_accepted = [this](std::shared_ptr<GoalHandle> goal_handle) {
             auto thread = std::thread([this, goal_handle]() {
                 RCLCPP_INFO_STREAM(get_logger(), "Execute goal");
-
-                // Update the parameter if it was changed during the node lifetime
-                _storage.set_robot_imu_twist(get_parameter(params::robot_imu_twist).as_double());
 
                 const auto goal = goal_handle->get_goal();
                 auto feedback = std::make_shared<ReachGoalAction::Feedback>();
@@ -165,61 +176,125 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                 const auto start_point = rclcpp::Clock().now();
 
-                // calculate distances to turn to
-                const auto a_max = get_parameter(params::max_angle_acceleration).as_double(); // rad/sec^2
-                const auto v_max = get_parameter(params::max_angle_velocity).as_double();     // rad/sec
-                const auto s_ac = pow(v_max, 2) / (2 * a_max); // distance, after which the velocity will become maximum
-                const auto angle_to_waypoint = _storage.angle_to_waypoint();
                 std::thread control_thread;
-
-                if (not _is_running)
+                // turn towards the waypoint
                 {
-                    RCLCPP_INFO_STREAM(get_logger(), "Stop executing due goal is cancelled");
-                    return;
-                }
+                    const auto a_max = get_parameter(params::max_angle_acceleration).as_double(); // rad/sec^2
+                    const auto v_max = get_parameter(params::max_angle_velocity).as_double();     // rad/sec
+                    const auto s_ac =
+                        pow(v_max, 2) / (2 * a_max); // distance, after which the velocity will become maximum
+                    const auto angle_to_waypoint = _storage.angle_to_waypoint();
 
-                if (not is_angle_reached())
-                {
-                    control_thread = std::thread([this, start_point, angle_to_waypoint, v_max, s_ac]() {
-                        rclcpp::Rate loop_rate(60);
+                    if (not _is_running)
+                    {
+                        RCLCPP_INFO_STREAM(get_logger(), "Stop executing due goal is cancelled");
+                        return;
+                    }
 
-                        const auto velocity_to_set = v_max * utils::sign(angle_to_waypoint.value());
+                    if (not is_angle_reached())
+                    {
+                        control_thread = std::thread([this, start_point, angle_to_waypoint, v_max, s_ac]() {
+                            rclcpp::Rate loop_rate(60);
 
-                        RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity "
-                                                                    << velocity_to_set << ", north angle "
-                                                                    << _storage.robot_azimuth());
+                            const auto velocity_to_set = v_max * utils::sign(angle_to_waypoint.value());
 
-                        set_robot_angle_speed(velocity_to_set);
+                            RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity "
+                                                                        << velocity_to_set << ", north angle "
+                                                                        << _storage.robot_azimuth());
 
-                        while (_is_running and abs(_storage.angle_to_waypoint().value()) > s_ac)
-                        {
-                            loop_rate.sleep();
-                        }
+                            set_robot_angle_speed(velocity_to_set);
 
-                        set_robot_angle_speed(0);
-                    });
-                }
-                else
-                {
-                    RCLCPP_INFO_STREAM(get_logger(), "Goal is already reached");
-                }
+                            while (_is_running and abs(_storage.angle_to_waypoint().value()) > s_ac)
+                            {
+                                loop_rate.sleep();
+                            }
 
-                while (_is_running and not is_angle_reached())
-                {
-                    feedback->distance_to_point = _storage.distance_to_waypoint_gps().value();
+                            set_robot_angle_speed(0);
+                        });
+                    }
+                    else
+                    {
+                        RCLCPP_INFO_STREAM(get_logger(), "Goal is already reached");
+                    }
 
-                    goal_handle->publish_feedback(feedback);
-                    loop_rate.sleep();
-                }
+                    while (_is_running and not is_angle_reached())
+                    {
+                        feedback->distance_to_point = _storage.distance_to_waypoint_gps().value();
 
-                if (not _is_running)
-                {
-                    RCLCPP_INFO_STREAM(get_logger(), "Stop executing main loop due goal is cancelled");
+                        goal_handle->publish_feedback(feedback);
+                        loop_rate.sleep();
+                    }
+
                     if (control_thread.joinable())
                     {
                         control_thread.join();
                     }
-                    return;
+
+                    if (not _is_running)
+                    {
+                        RCLCPP_INFO_STREAM(get_logger(), "Not running, stop goal execution");
+                        return;
+                    }
+                }
+
+                // go to the waypoint
+                {
+                    const auto a_max = get_parameter(params::max_acceleration).as_double(); // meter/sec^2
+                    const auto v_max = get_parameter(params::max_velocity).as_double();     // meter/sec
+                    const auto s_ac =
+                        pow(v_max, 2) / (2 * a_max); // distance, after which the velocity will become maximum
+                    const auto distance_to_waypoint = _storage.distance_to_waypoint_related();
+
+                    if (not _is_running)
+                    {
+                        RCLCPP_INFO_STREAM(get_logger(), "Stop executing due goal is cancelled");
+                        return;
+                    }
+
+                    if (not is_goal_reached())
+                    {
+                        control_thread = std::thread([this, start_point, distance_to_waypoint, v_max, s_ac]() {
+                            rclcpp::Rate loop_rate(60);
+
+                            const auto velocity_to_set = v_max * utils::sign(distance_to_waypoint.value());
+
+                            RCLCPP_INFO_STREAM(get_logger(), "Go to waypoint, velocity "
+                                                                 << velocity_to_set << ", distance "
+                                                                 << _storage.distance_to_waypoint_related());
+
+                            set_robot_speed(velocity_to_set);
+
+                            while (_is_running and _storage.distance_to_waypoint_related() > s_ac)
+                            {
+                                loop_rate.sleep();
+                            }
+
+                            set_robot_speed(0);
+                        });
+                    }
+                    else
+                    {
+                        RCLCPP_INFO_STREAM(get_logger(), "Destination is already reached");
+                    }
+
+                    while (_is_running and not is_goal_reached())
+                    {
+                        feedback->distance_to_point = _storage.distance_to_waypoint_related().value();
+
+                        goal_handle->publish_feedback(feedback);
+                        loop_rate.sleep();
+                    }
+
+                    if (control_thread.joinable())
+                    {
+                        control_thread.join();
+                    }
+
+                    if (not _is_running)
+                    {
+                        RCLCPP_INFO_STREAM(get_logger(), "Not running, stop goal execution");
+                        return;
+                    }
                 }
 
                 result->elapsed_time = (rclcpp::Clock().now() - start_point).seconds();
@@ -228,11 +303,6 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 RCLCPP_INFO_STREAM(get_logger(), "Goal Succeed");
 
                 _is_running = false;
-
-                if (control_thread.joinable())
-                {
-                    control_thread.join();
-                }
             });
 
             thread.detach();
@@ -252,6 +322,18 @@ class ReachGoalActionServerNode : public rclcpp::Node
         geometry_msgs::msg::Twist msg_to_pub;
         msg_to_pub.angular.z = speed * (-1); // we assume that a positive speed is for turning clockwise
         _speed_pub->publish(msg_to_pub);
+        RCLCPP_INFO_STREAM(get_logger(), "Set angle velocity to " << speed);
+    }
+
+    /**
+     * set_robot_speed
+     * args - speed in meter/sec
+     */
+    void set_robot_speed(double speed)
+    {
+        geometry_msgs::msg::Twist msg_to_pub;
+        msg_to_pub.linear.x = speed;
+        _speed_pub->publish(msg_to_pub);
         RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << speed);
     }
 
@@ -266,7 +348,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
     {
         const auto acceptable_range = Meter(get_parameter(params::distance_threshold).as_double());
 
-        return _storage.distance_to_waypoint_gps() <= acceptable_range;
+        return _storage.distance_to_waypoint_related() <= acceptable_range;
     }
 
   private:

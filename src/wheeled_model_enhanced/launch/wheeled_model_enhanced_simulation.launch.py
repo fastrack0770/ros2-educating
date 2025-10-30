@@ -62,10 +62,13 @@ def generate_launch_description():
                 name="reach_goal_action_server_node",
                 parameters=[
                     {"angle_threshold": 0.05},
-                    {"distance_threshold": 0.1},
+                    {"distance_threshold": 1.0},
                     {"max_angle_acceleration": 2.0},
                     {"max_angle_velocity": 1.0},
                     {"robot_imu_twist": 1.5707963267948966},
+                    {"max_acceleration": 1.0},
+                    {"max_velocity": 2.0},
+                    {"robot_length_in_m": 1.5},
                 ],
                 # prefix=['gdbserver localhost:3000'] # Left for debugging purposes
             ),
