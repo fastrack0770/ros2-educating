@@ -27,6 +27,10 @@ constexpr const double max_angle_acceleration_default = 2;
 
 constexpr const char *max_angle_velocity = "max_angle_velocity";
 constexpr const double max_angle_velocity_default = 1;
+
+// Difference between the IMU sensor's x axe and the robot forward direction
+constexpr const char *robot_imu_twist = "robot_imu_twist";
+constexpr const double robot_imu_twist_default = -1.5707963267948966; // -90 in degrees
 } // end of namespace params
 
 class ReachGoalActionServerNode : public rclcpp::Node
@@ -39,6 +43,9 @@ class ReachGoalActionServerNode : public rclcpp::Node
         declare_parameter<double>(params::distance_threshold, params::distance_threshold_default);
         declare_parameter<double>(params::max_angle_acceleration, params::max_angle_acceleration_default);
         declare_parameter<double>(params::max_angle_velocity, params::max_angle_velocity_default);
+        declare_parameter<double>(params::robot_imu_twist, params::robot_imu_twist_default);
+
+        _storage.set_robot_imu_twist(get_parameter(params::robot_imu_twist).as_double());
 
         // robot navsat sub
         {
@@ -143,6 +150,9 @@ class ReachGoalActionServerNode : public rclcpp::Node
             auto thread = std::thread([this, goal_handle]() {
                 RCLCPP_INFO_STREAM(get_logger(), "Execute goal");
 
+                // Update the parameter if it was changed during the node lifetime
+                _storage.set_robot_imu_twist(get_parameter(params::robot_imu_twist).as_double());
+
                 const auto goal = goal_handle->get_goal();
                 auto feedback = std::make_shared<ReachGoalAction::Feedback>();
                 auto result = std::make_shared<ReachGoalAction::Result>();
@@ -182,7 +192,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
                         while (_is_running and abs(_storage.angle_to_waypoint().value()) > s_ac)
                         {
                             loop_rate.sleep();
-                        }   
+                        }
 
                         if (not _is_running)
                         {

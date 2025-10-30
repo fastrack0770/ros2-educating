@@ -7,7 +7,7 @@
 
 /**
  * Storage
- * Keeps values related to robot movement
+ * Keeps and calculates values related to robot movement
  */
 class Storage
 {
@@ -15,7 +15,7 @@ class Storage
     {
         Pos gps_pos;
         Cartesian topo_pos;
-        Cartesian related_pos; // robot related pos is always zero
+        Cartesian related_pos; // the robot related pos is always zero
     };
 
   public:
@@ -43,6 +43,7 @@ class Storage
 
         _robot_pos.gps_pos = msg;
 
+        // do related calculations
         _robot_pos.topo_pos = utils::get_topo(_robot_pos.gps_pos, _robot_pos.gps_pos);
 
         _waypoint_pos.topo_pos = utils::get_topo(_waypoint_pos.gps_pos, _robot_pos.gps_pos);
@@ -76,6 +77,7 @@ class Storage
 
         _waypoint_pos.gps_pos = msg;
 
+        // do related calculations
         _waypoint_pos.topo_pos = utils::get_topo(_waypoint_pos.gps_pos, _robot_pos.gps_pos);
         _waypoint_pos.related_pos = _waypoint_pos.topo_pos - _robot_pos.topo_pos;
 
@@ -96,6 +98,7 @@ class Storage
 
         _imu = imu;
 
+        // do related calculations
         _angle_to_waypoint =
             utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, robot_azimuth());
     }
@@ -121,6 +124,17 @@ class Storage
         return Radian(utils::get_euler_z_angle(_imu) + _robot_imu_twist.value());
     }
 
+    void set_robot_imu_twist(Radian twist)
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        _robot_imu_twist = twist;
+
+        // do related calculations
+        _angle_to_waypoint =
+            utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, robot_azimuth());
+    }
+
   private:
     mutable std::recursive_mutex _m;
 
@@ -132,7 +146,5 @@ class Storage
     sensor_msgs::msg::Imu _imu;
     Radian _angle_to_waypoint = 0.f;
 
-    // TODO make it as a parameter
-    // Difference between the IMU sensor and the robot orientationss
-    const Radian _robot_imu_twist = Degree(-90);
+    Radian _robot_imu_twist = Degree(-90);
 };
