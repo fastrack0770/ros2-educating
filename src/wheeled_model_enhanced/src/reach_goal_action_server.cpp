@@ -75,7 +75,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
                                        std::setprecision(8)
                                            << "distance gps: " << _storage.distance_to_waypoint_gps()
                                            << ", related: " << _storage.distance_to_waypoint_related()
-                                           << ", angle: " << Degree(_storage.angle_to_waypoint()).value());
+                                           << ", angle to wp: " << Degree(_storage.angle_to_waypoint()).value());
                 }
                 catch (const std::exception &e)
                 {
@@ -181,9 +181,6 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 {
                     const auto a_max = get_parameter(params::max_angle_acceleration).as_double(); // rad/sec^2
                     const auto v_max = get_parameter(params::max_angle_velocity).as_double();     // rad/sec
-                    const auto s_ac =
-                        pow(v_max, 2) / (2 * a_max); // distance, after which the velocity will become maximum
-                    const auto angle_to_waypoint = _storage.angle_to_waypoint();
 
                     if (not _is_running)
                     {
@@ -193,23 +190,39 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                     if (not is_angle_reached())
                     {
-                        control_thread = std::thread([this, start_point, angle_to_waypoint, v_max, s_ac]() {
+                        control_thread = std::thread([this, v_max, a_max]() {
                             rclcpp::Rate loop_rate(60);
 
-                            const auto velocity_to_set = v_max * utils::sign(angle_to_waypoint.value());
-
-                            RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity "
-                                                                        << velocity_to_set << ", north angle "
-                                                                        << _storage.robot_azimuth());
-
-                            set_robot_angle_speed(velocity_to_set);
-
-                            while (_is_running and abs(_storage.angle_to_waypoint().value()) > s_ac)
+                            while (_is_running and not is_angle_reached())
                             {
-                                loop_rate.sleep();
-                            }
+                                const auto angle_to_waypoint = _storage.angle_to_waypoint().value();
 
-                            set_robot_angle_speed(0);
+                                double velocity_to_set = 0.f;
+                                double s_ac = pow(v_max, 2) /
+                                              (2 * a_max); // distance, after which the velocity will become maximum
+                                if (angle_to_waypoint > 2 * s_ac)
+                                {
+                                    velocity_to_set = v_max * utils::sign(angle_to_waypoint);
+                                }
+                                else
+                                {
+                                    s_ac = angle_to_waypoint / 2;
+                                    velocity_to_set = sqrt(a_max * s_ac) * utils::sign(angle_to_waypoint);
+                                }
+
+                                RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity "
+                                                                            << velocity_to_set << ", north angle "
+                                                                            << _storage.robot_azimuth());
+
+                                set_robot_angle_speed(velocity_to_set);
+
+                                while (_is_running and abs(_storage.angle_to_waypoint().value()) > s_ac)
+                                {
+                                    loop_rate.sleep();
+                                }
+
+                                set_robot_angle_speed(0);
+                            }
                         });
                     }
                     else
