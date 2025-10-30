@@ -1,0 +1,9 @@
+# Goal
+float64 goal_lat # latitude
+float64 goal_long # longitude
+---
+# Result
+float32 elapsed_time # in seconds
+---
+# Feedback
+float32 distance_to_point # in meters

@@ -30,6 +30,7 @@ simulation = ExecuteProcess(
 
 
 def generate_launch_description():
+
     return LaunchDescription(
         [
             SetEnvironmentVariable(
@@ -44,7 +45,10 @@ def generate_launch_description():
                     "/camera@sensor_msgs/msg/Image[ignition.msgs.Image",
                     "/camera_pos_cmd@std_msgs/msg/Float64@ignition.msgs.Double",
                     "/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU",
-                    "/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat"
+                    "/wheeled_model_enhanced/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat",
+                    "/waypoint/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat",
+                    "/model/wheeled_model_enhanced/odometry@nav_msgs/msg/Odometry[ignition.msgs.Odometry",
+                    "/model/wheeled_model_enhanced/tf@geometry_msgs/msg/PoseArray[ignition.msgs.Pose_V",
                 ],
                 remappings=[
                     ("/model/wheeled_model_enhanced/cmd_vel", "cmd_vel"),
@@ -52,7 +56,20 @@ def generate_launch_description():
                 ],
                 output="screen",
             ),
-            # Actually doesnt work. There are three copies of Node above that are created, and OnProcessExist kills only one of them
+            Node(
+                package="wheeled_model_enhanced",
+                executable="reach_goal_action_server",
+                name="reach_goal_action_server_node",
+                parameters=[
+                    {"angle_threshold": 0.05},
+                    {"distance_threshold": 0.1},
+                    {"max_angle_acceleration": 2.0},
+                    {"max_angle_velocity": 1.0},
+                    {"robot_imu_twist": 1.5707963267948966},
+                ],
+                # prefix=['gdbserver localhost:3000'] # Left for debugging purposes
+            ),
+            # Actually doesnt work. There are three copies of Node above that are created, and OnProcessExit kills only one of them
             # Btw if stop the simulation by Ctrl+C, all three copies will stop gracefully
             # Reference to issue: https://github.com/fastrack0770/ros2-educating/issues/1
             RegisterEventHandler(

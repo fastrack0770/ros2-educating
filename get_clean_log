@@ -1,0 +1,30 @@
+#!/bin/bash
+# Script to get the last log folder from ~/.ros/log and copy to
+# debug folder for further investigation
+
+src_dir="$HOME/.ros/log"
+dest_dir="debug"
+
+# Find the last modified folder (most recent)
+# Uses null delimiter to handle spaces/special chars in names
+last_folder=""
+while IFS= read -r -d '' subdir; do
+    last_folder="$subdir"
+done < <(find "$src_dir" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+
+# Check if any folders were found
+if [ -z "$last_folder" ] || [ "$last_folder" = "$src_dir" ]; then
+    echo "Error: No subdirectories found in '$src_dir'" >&2
+    exit 1
+fi
+
+# Extract folder name (remove path)
+folder_name="${last_folder##*/}"
+
+# Copy the folder to destination
+echo "Copying latest folder: '$folder_name'"
+cp -r "$last_folder" "$dest_dir/"
+
+# Cleaning log
+echo $dest_dir/$folder_name/launch.log
+./clean_log "Subscription taking message" "Subscription take succeeded" $dest_dir/$folder_name/launch.log
