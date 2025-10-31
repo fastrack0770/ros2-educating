@@ -243,9 +243,6 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 {
                     const auto a_max = get_parameter(params::max_acceleration).as_double(); // meter/sec^2
                     const auto v_max = get_parameter(params::max_velocity).as_double();     // meter/sec
-                    const auto s_ac =
-                        pow(v_max, 2) / (2 * a_max); // distance, after which the velocity will become maximum
-                    const auto distance_to_waypoint = _storage.distance_to_waypoint_related();
 
                     if (not _is_running)
                     {
@@ -255,23 +252,29 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                     if (not is_goal_reached())
                     {
-                        control_thread = std::thread([this, start_point, distance_to_waypoint, v_max, s_ac]() {
+                        control_thread = std::thread([this, start_point, v_max, a_max]() {
                             rclcpp::Rate loop_rate(60);
 
-                            const auto velocity_to_set = v_max * utils::sign(distance_to_waypoint.value());
-
-                            RCLCPP_INFO_STREAM(get_logger(), "Go to waypoint, velocity "
-                                                                 << velocity_to_set << ", distance "
-                                                                 << _storage.distance_to_waypoint_related());
-
-                            set_robot_speed(velocity_to_set);
-
-                            while (_is_running and _storage.distance_to_waypoint_related() > s_ac)
+                            while (_is_running and not is_goal_reached())
                             {
-                                loop_rate.sleep();
-                            }
+                                const auto distance_to_waypoint = _storage.distance_to_waypoint_related().value();
 
-                            set_robot_speed(0);
+                                const auto [velocity_to_set, s_ac] =
+                                    utils::get_speed(v_max, a_max, distance_to_waypoint);
+
+                                RCLCPP_INFO_STREAM(get_logger(), "Go to waypoint, velocity " << velocity_to_set
+                                                                                             << ", distance "
+                                                                                             << distance_to_waypoint);
+
+                                set_robot_speed(velocity_to_set);
+
+                                while (_is_running and _storage.distance_to_waypoint_related() > s_ac)
+                                {
+                                    loop_rate.sleep();
+                                }
+
+                                set_robot_speed(0);
+                            }
                         });
                     }
                     else

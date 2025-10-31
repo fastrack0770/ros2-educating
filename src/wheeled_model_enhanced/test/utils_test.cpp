@@ -191,3 +191,12 @@ TEST(utils, get_angle_between_vectors_signed)
     auto rn_wr_angle = get_angle_between_vectors_signed(rn_vec, wr_vec);
     EXPECT_FLOAT_EQ(45.691002, to_deg(rn_wr_angle));
 }
+
+TEST(utils, get_speed)
+{
+    {
+        const auto [velocity_to_set, s_ac] = utils::get_speed(1, 2, -0.433544);
+        EXPECT_FLOAT_EQ(-0.65844059, velocity_to_set);
+        EXPECT_FLOAT_EQ(0.216772, s_ac);
+    }
+}
