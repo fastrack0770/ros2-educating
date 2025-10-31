@@ -197,18 +197,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
                             {
                                 const auto angle_to_waypoint = _storage.angle_to_waypoint().value();
 
-                                double velocity_to_set = 0.f;
-                                double s_ac = pow(v_max, 2) /
-                                              (2 * a_max); // distance, after which the velocity will become maximum
-                                if (angle_to_waypoint > 2 * s_ac)
-                                {
-                                    velocity_to_set = v_max * utils::sign(angle_to_waypoint);
-                                }
-                                else
-                                {
-                                    s_ac = angle_to_waypoint / 2;
-                                    velocity_to_set = sqrt(a_max * s_ac) * utils::sign(angle_to_waypoint);
-                                }
+                                const auto [velocity_to_set, s_ac] = utils::get_speed(v_max, a_max, angle_to_waypoint);
 
                                 RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity "
                                                                             << velocity_to_set << ", north angle "
