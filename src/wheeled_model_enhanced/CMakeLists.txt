@@ -31,7 +31,7 @@ add_executable(reach_goal_action_server
   include/wheeled_model_enhanced/types.hpp
   include/wheeled_model_enhanced/utils.hpp
   include/wheeled_model_enhanced/storage.hpp)
-ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs)
+ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs nav_msgs)
 target_include_directories(reach_goal_action_server PUBLIC include)
 target_link_libraries(reach_goal_action_server "${cpp_typesupport_target}")
 
@@ -40,7 +40,7 @@ add_executable(reach_goal_action_client
   include/wheeled_model_enhanced/types.hpp
   include/wheeled_model_enhanced/utils.hpp
   include/wheeled_model_enhanced/storage.hpp)
-ament_target_dependencies(reach_goal_action_client rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs)
+ament_target_dependencies(reach_goal_action_client rclcpp action_msgs rclcpp_action)
 target_include_directories(reach_goal_action_client PUBLIC include)
 target_link_libraries(reach_goal_action_client "${cpp_typesupport_target}")
 
@@ -61,7 +61,7 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(${PROJECT_NAME}_test test/main.cpp test/tutorial_test.cpp test/utils_test.cpp test/types_test.cpp)
-  ament_target_dependencies(${PROJECT_NAME}_test rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs)
+  ament_target_dependencies(${PROJECT_NAME}_test rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs nav_msgs)
   target_include_directories(${PROJECT_NAME}_test PUBLIC
     ../include
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

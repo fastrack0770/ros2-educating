@@ -272,7 +272,7 @@ std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, double 
     else
     {
         s_ac = std::abs(desired_distance / 2);
-        velocity_to_set = sqrt(acceleration * s_ac) * utils::sign(desired_distance);
+        velocity_to_set = sqrt(2 * acceleration * s_ac) * utils::sign(desired_distance);
     }
 
     return {velocity_to_set, s_ac};

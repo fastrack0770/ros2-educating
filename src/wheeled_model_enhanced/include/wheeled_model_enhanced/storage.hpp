@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nav_msgs/msg/odometry.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 
 #include "types.hpp"
@@ -97,6 +98,53 @@ class Storage
             utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, robot_azimuth());
     }
 
+    void set_odometry(const nav_msgs::msg::Odometry &new_data)
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        const auto angular_velocity_diff = new_data.twist.twist.angular.z - _odometry.twist.twist.angular.z;
+        const auto passed_time =
+            new_data.header.stamp.sec - _odometry.header.stamp.sec +
+            static_cast<double>(new_data.header.stamp.nanosec - _odometry.header.stamp.nanosec) / 1'000'000'000;
+
+        _odometry = new_data;
+
+        // do related calculations
+        _robot_angular_acceleration = angular_velocity_diff / passed_time;
+    }
+
+    double angular_speed() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return _odometry.twist.twist.angular.z;
+    }
+
+    double linear_speed() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return _odometry.twist.twist.linear.x;
+    }
+
+    /**
+     * angular_acceleration
+     * this value is used only for a reference due to an acceleration is not a constant
+     */
+    double angular_acceleration() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return _robot_angular_acceleration;
+    }
+
+    double linear_acceleration() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return _imu.linear_acceleration.x;
+    }
+
     Radian angle_to_waypoint() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
@@ -162,4 +210,8 @@ class Storage
 
     Radian _robot_imu_twist = Degree(90);
     Meter _robot_length = 1.5;
+
+    nav_msgs::msg::Odometry _odometry;
+
+    double _robot_angular_acceleration = 0.f;
 };

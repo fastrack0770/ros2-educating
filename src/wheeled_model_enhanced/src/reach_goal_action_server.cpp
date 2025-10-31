@@ -1,6 +1,7 @@
 #include <iomanip>
 
 #include "geometry_msgs/msg/twist.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "sensor_msgs/msg/imu.hpp"
@@ -134,6 +135,30 @@ class ReachGoalActionServerNode : public rclcpp::Node
             _speed_pub = create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
         }
 
+        // odometry sub
+        {
+            const auto callback = [this](const nav_msgs::msg::Odometry &msg) {
+                _storage.set_odometry(msg);
+
+                try
+                {
+                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
+                                                "angular speed: " << _storage.angular_speed()
+                                                                  << ", angular ac: " << _storage.angular_acceleration()
+                                                                  << ", linear speed: " << _storage.linear_speed()
+                                                                  << ", linear ac: " << _storage.linear_acceleration());
+                }
+                catch (const std::exception &e)
+                {
+                    RCLCPP_ERROR_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
+                                                 "Got exception while calculate angles from odometry: " << e.what());
+                }
+            };
+
+            _odometry_sub =
+                create_subscription<nav_msgs::msg::Odometry>("/model/wheeled_model_enhanced/odometry", 10, callback);
+        }
+
         const auto handle_goal =
             [this](const rclcpp_action::GoalUUID &,
                    std::shared_ptr<const ReachGoalAction::Goal> goal) -> rclcpp_action::GoalResponse {
@@ -211,6 +236,11 @@ class ReachGoalActionServerNode : public rclcpp::Node
                                 }
 
                                 set_robot_angle_speed(0);
+
+                                while (_is_running and _storage.angular_speed() > 0)
+                                {
+                                    loop_rate.sleep();
+                                }
                             }
                         });
                     }
@@ -274,6 +304,11 @@ class ReachGoalActionServerNode : public rclcpp::Node
                                 }
 
                                 set_robot_speed(0);
+
+                                while (_is_running and _storage.linear_speed() > 0)
+                                {
+                                    loop_rate.sleep();
+                                }
                             }
                         });
                     }
@@ -365,6 +400,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _waypoint_navsat_sub;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr _imu_sub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr _speed_pub;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _odometry_sub;
 
     std::atomic_bool _is_running{false};
 };
