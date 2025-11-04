@@ -76,7 +76,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
                                        std::setprecision(8)
                                            << "distance gps: " << _storage.distance_to_waypoint_gps()
                                            << ", related: " << _storage.distance_to_waypoint_related()
-                                           << ", angle to wp: " << Degree(_storage.angle_to_waypoint()).value());
+                                           << ", angle to wp (rad): " << _storage.angle_to_waypoint());
                 }
                 catch (const std::exception &e)
                 {

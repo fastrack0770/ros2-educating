@@ -361,6 +361,10 @@ class Pos
         : _latitude(Degree(goal->goal_lat)), _longitude(Degree(goal->goal_long)), _altitude(0.f)
     {
     }
+    Pos(const sensor_msgs::msg::NavSatFix &msg)
+        : _latitude(Degree(msg.latitude)), _longitude(Degree(msg.longitude)), _altitude(msg.altitude)
+    {
+    }
     Radian latitude() const
     {
         return _latitude;
@@ -393,8 +397,8 @@ class Pos
 
     Pos &operator=(const sensor_msgs::msg::NavSatFix &msg)
     {
-        _latitude = msg.latitude * M_PI / 180;   // latitude in navsatfix in degrees
-        _longitude = msg.longitude * M_PI / 180; // longitude in navsatfix in degrees
+        _latitude = Degree(msg.latitude);
+        _longitude = Degree(msg.longitude);
         _altitude = msg.altitude;
         return *this;
     }
@@ -539,4 +543,11 @@ struct Plane
 inline std::ostream &operator<<(std::ostream &os, const Plane &rhv)
 {
     return os << "{ a: " << rhv.a << " b: " << rhv.b << " c: " << rhv.c << " d: " << rhv.d << "}";
+}
+
+inline double operator-(builtin_interfaces::msg::Time lhv, const builtin_interfaces::msg::Time &rhv)
+{
+    const auto passed_time = lhv.sec - rhv.sec + (static_cast<double>(lhv.nanosec) - rhv.nanosec) / 1'000'000'000;
+
+    return passed_time;
 }

@@ -3,6 +3,7 @@
 #include "types.hpp"
 
 #include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/nav_sat_fix.hpp"
 
 #include <cmath>
 
