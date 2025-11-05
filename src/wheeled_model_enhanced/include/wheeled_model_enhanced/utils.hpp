@@ -3,6 +3,7 @@
 #include "types.hpp"
 
 #include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/nav_sat_fix.hpp"
 
 #include <cmath>
 
@@ -254,6 +255,28 @@ Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &way
 template <typename T> int sign(T val)
 {
     return (T(0) < val) - (val < T(0));
+}
+
+namespace
+{
+using SpeedToSet = double;
+using AccelerationDistance = double;
+} // namespace
+std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, double acceleration, double desired_distance)
+{
+    double velocity_to_set = 0.f;
+    double s_ac = pow(max_speed, 2) / (2 * acceleration); // distance, after which the velocity will become maximum
+    if (std::abs(desired_distance) > 2 * s_ac)
+    {
+        velocity_to_set = max_speed * utils::sign(desired_distance);
+    }
+    else
+    {
+        s_ac = std::abs(desired_distance / 2);
+        velocity_to_set = sqrt(2 * acceleration * s_ac) * utils::sign(desired_distance);
+    }
+
+    return {velocity_to_set, s_ac};
 }
 
 } // end of namespace utils

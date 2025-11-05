@@ -2,7 +2,12 @@
 Based on udemy ROS2CRobotics course.  
 Contains two packages:  
 1. `udemy_ros2_pkg`. This package was made during the course completion. Using only as a reference material.  
-2. `wheeled_model_enhanced`. This package was based on the course final work and now is developing further  
+2. `wheeled_model_enhanced`. This package was based on the course final work and now is developing further. Contains nodes for a robot that can move around and show what it sees on a camera. The robot simulation is based on gazebo.  
+
+## Requirements
+To work with this project, following conditions must be met:
+1. OS - `Ubuntu 22.04 LTS`
+2. ROS2 version - `Humble`  
 
 ## Usage
 All commands are provided like they will be executed from the repo root.  

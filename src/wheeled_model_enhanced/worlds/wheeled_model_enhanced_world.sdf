@@ -44,7 +44,7 @@
             </uri>
         </include>
         <include>
-            <pose>0 10 1 0 0 0</pose>
+            <pose>-2 0 1 0 0 0</pose>
             <uri>
                 waypoint
             </uri>

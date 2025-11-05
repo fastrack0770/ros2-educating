@@ -25,8 +25,9 @@ TEST(utils, distance)
 {
     // distance must be 376099.61 according to https://gps-coordinates.org/distance-between-coordinates.php
     // difference is not high, so will try to use it
-    EXPECT_FLOAT_EQ(376094.41, utils::distance(Pos(Degree(35.652832), Degree(139.839478), 0),   // tokyo
-                                                         Pos(Degree(35.011665), Degree(135.768326), 0)).value()); // kyoto
+    EXPECT_FLOAT_EQ(376094.41, utils::distance(Pos(Degree(35.652832), Degree(139.839478), 0), // tokyo
+                                               Pos(Degree(35.011665), Degree(135.768326), 0))
+                                   .value()); // kyoto
 }
 
 TEST(utils, get_angle_to_waypoint)
@@ -89,7 +90,7 @@ TEST(utils, get_plane)
 TEST(utils, normalize)
 {
     using namespace utils;
-    
+
     EXPECT_EQ(Vector3D(0, 0, 1), normalize(Vector3D(0, 0, 300)));
 }
 
@@ -122,35 +123,35 @@ TEST(utils, get_angle_to_waypoint_signed)
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, -3);
-        
+
         EXPECT_FLOAT_EQ(-90, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(0)).value()));
     }
     // north to the right of the robot by 45 degree, angle to turn is -45
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, 3);
-        
+
         EXPECT_FLOAT_EQ(135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(45)).value()));
     }
     // north to the right of the robot by 45 degree, angle to turn is 135
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, -3);
-        
+
         EXPECT_FLOAT_EQ(-45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(45)).value()));
     }
     // north to the left of the robot by 45 degree, angle to turn is -135
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, 3);
-        
+
         EXPECT_FLOAT_EQ(45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(-45)).value()));
     }
     // north to the left of the robot by 45 degree, angle to turn is 45
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, -3);
-        
+
         EXPECT_FLOAT_EQ(-135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(-45)).value()));
     }
     // waypoint to the left
@@ -159,7 +160,7 @@ TEST(utils, get_angle_to_waypoint_signed)
         const Cartesian waypoint(-9.4050172, 0.68499405, -0.20115671); // { x: -9.4050172 y: 0.68499405 z: -0.20115671}
         const Radian robot_azimuth(1.5708);
 
-        EXPECT_FLOAT_EQ(-88.774521, to_deg(get_angle_to_waypoint_signed(robot, waypoint,robot_azimuth).value()));
+        EXPECT_FLOAT_EQ(-88.774521, to_deg(get_angle_to_waypoint_signed(robot, waypoint, robot_azimuth).value()));
     }
     // waypoint to the right
     {
@@ -167,7 +168,7 @@ TEST(utils, get_angle_to_waypoint_signed)
         const Cartesian waypoint(9.4050172, 0.68499405, -0.20115671);
         const Radian robot_azimuth(1.5708);
 
-        EXPECT_FLOAT_EQ(88.77494, to_deg(get_angle_to_waypoint_signed(robot, waypoint,robot_azimuth).value()));
+        EXPECT_FLOAT_EQ(88.77494, to_deg(get_angle_to_waypoint_signed(robot, waypoint, robot_azimuth).value()));
     }
     // angle to waypoint is 135
     {
@@ -175,7 +176,7 @@ TEST(utils, get_angle_to_waypoint_signed)
         const Cartesian waypoint(9.6874266, 0.68499405, 9.9239567);
         const Radian robot_azimuth(1.5708);
 
-        EXPECT_FLOAT_EQ(135.69121, to_deg(get_angle_to_waypoint_signed(robot, waypoint,robot_azimuth).value()));
+        EXPECT_FLOAT_EQ(135.69121, to_deg(get_angle_to_waypoint_signed(robot, waypoint, robot_azimuth).value()));
     }
 }
 
@@ -190,4 +191,23 @@ TEST(utils, get_angle_between_vectors_signed)
 
     auto rn_wr_angle = get_angle_between_vectors_signed(rn_vec, wr_vec);
     EXPECT_FLOAT_EQ(45.691002, to_deg(rn_wr_angle));
+}
+
+TEST(utils, get_speed)
+{
+    {
+        const auto [velocity_to_set, s_ac] = utils::get_speed(1, 2, -0.433544);
+        EXPECT_FLOAT_EQ(-0.93117559, velocity_to_set);
+        EXPECT_FLOAT_EQ(0.216772, s_ac);
+    }
+    {
+        const auto [velocity_to_set, s_ac] = utils::get_speed(10, 1, 21.0079);
+        EXPECT_FLOAT_EQ(4.5834374, velocity_to_set);
+        EXPECT_FLOAT_EQ(10.50395, s_ac);
+    }
+    {
+        const auto [velocity_to_set, s_ac] = utils::get_speed(1, 2, -2.70037);
+        EXPECT_FLOAT_EQ(-1, velocity_to_set);
+        EXPECT_FLOAT_EQ(0.25, s_ac);
+    }
 }
