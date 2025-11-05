@@ -72,11 +72,10 @@ class ReachGoalActionServerNode : public rclcpp::Node
                                                          << "ROBOT gps: " << _storage.robot_gps_pos()
                                                          << ", topoc: " << _storage.robot_topo_pos()
                                                          << ", related: " << _storage.robot_related_pos());
-                    RCLCPP_INFO_STREAM(get_logger(),
-                                       std::setprecision(8)
-                                           << "distance gps: " << _storage.distance_to_waypoint_gps()
-                                           << ", related: " << _storage.distance_to_waypoint_related()
-                                           << ", angle to wp (rad): " << _storage.angle_to_waypoint());
+                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
+                                                         << "distance gps: " << _storage.distance_to_waypoint_gps()
+                                                         << ", related: " << _storage.distance_to_waypoint_related()
+                                                         << ", angle to wp (rad): " << _storage.angle_to_waypoint());
                 }
                 catch (const std::exception &e)
                 {
@@ -237,7 +236,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                                 set_robot_angle_speed(0);
 
-                                while (_is_running and _storage.angular_speed() > 0)
+                                while (_is_running and _storage.has_angular_speed())
                                 {
                                     loop_rate.sleep();
                                 }
@@ -305,7 +304,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                                 set_robot_speed(0);
 
-                                while (_is_running and _storage.linear_speed() > 0)
+                                while (_is_running and _storage.has_linear_speed())
                                 {
                                     loop_rate.sleep();
                                 }

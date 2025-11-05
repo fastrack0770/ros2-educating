@@ -118,11 +118,25 @@ class Storage
         return _odometry.twist.twist.angular.z;
     }
 
+    bool has_angular_speed() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return abs(angular_speed()) > 0;
+    }
+
     double linear_speed() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
 
         return _odometry.twist.twist.linear.x;
+    }
+
+    bool has_linear_speed() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return abs(linear_speed()) > 0;
     }
 
     /**
