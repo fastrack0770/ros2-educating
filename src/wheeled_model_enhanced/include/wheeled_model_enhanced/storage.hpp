@@ -208,13 +208,6 @@ class Storage
         _distance_to_waypoint_related =
             utils::distance(_robot_pos.related_pos, _waypoint_pos.related_pos) - _robot_length;
     }
-    void calculate_robot_speed(const sensor_msgs::msg::NavSatFix &old_pos, const sensor_msgs::msg::NavSatFix &new_pos)
-    {
-        const auto travelled_distance = utils::distance(old_pos, new_pos);
-        const auto travelled_time = new_pos.header.stamp - old_pos.header.stamp;
-
-        _robot_linear_speed = travelled_distance.value() / travelled_time; // TODO need to note an acceleration here
-    }
 
   private:
     mutable std::recursive_mutex _m;
