@@ -10,12 +10,12 @@
 namespace utils
 {
 
-double to_deg(double value)
+inline double to_deg(double value)
 {
     return value / M_PI * 180;
 }
 
-double to_rad(double value)
+inline double to_rad(double value)
 {
     return value * M_PI / 180;
 }
@@ -24,7 +24,7 @@ double to_rad(double value)
  * abs
  * Get a module from a 3d vector. Result in meters
  */
-double abs(Vector3D vec)
+inline double abs(Vector3D vec)
 {
     return std::sqrt(std::pow(vec.x.value(), 2) + std::pow(vec.y.value(), 2) + std::pow(vec.z.value(), 2));
 }
@@ -33,7 +33,7 @@ double abs(Vector3D vec)
  * make_vector
  * Make a vector from two cartesian coordinates
  */
-Vector3D make_vector(const Cartesian &lhv, const Cartesian &rhv)
+inline Vector3D make_vector(const Cartesian &lhv, const Cartesian &rhv)
 {
     return Vector3D(rhv.x - lhv.x, rhv.y - lhv.y, rhv.z - lhv.z);
 }
@@ -42,7 +42,7 @@ Vector3D make_vector(const Cartesian &lhv, const Cartesian &rhv)
  * get_angle_between_vectors
  * Get angle between two 3D vectors
  */
-double get_angle_between_vectors(const Vector3D &lhv, const Vector3D &rhv)
+inline double get_angle_between_vectors(const Vector3D &lhv, const Vector3D &rhv)
 {
     return acos((lhv * rhv) / (abs(lhv) * abs(rhv)));
 }
@@ -52,7 +52,7 @@ double get_angle_between_vectors(const Vector3D &lhv, const Vector3D &rhv)
  * Earth radius at the specified latitude
  * Realization got from: https://gis.stackexchange.com/questions/242188/calculating-the-earth-radius-at-latitude
  */
-double earth_radius_at(const Pos &pos)
+inline double earth_radius_at(const Pos &pos)
 {
     constexpr double WGS_ELLIPSOID_EQ = 6378137.0;    // equatorial, in meters
     constexpr double WGS_ELLIPSOID_POL = 6356752.314; // polar, in meters
@@ -72,7 +72,7 @@ double earth_radius_at(const Pos &pos)
  * Earth radius at the specified latitude, an alternative method
  * Realization got from: https://gscommunitycodes.usf.edu/geoscicommunitycodes/public/geophysics/Gravity/earth_shape.php
  */
-double earth_radius_at_2(const Pos &pos)
+inline double earth_radius_at_2(const Pos &pos)
 {
     constexpr double f = 1 / 298.257223563;
     constexpr double WGS_ELLIPSOID_EQ = 6378137.0; // equatorial, in meters
@@ -87,7 +87,7 @@ double earth_radius_at_2(const Pos &pos)
  * Distance by Haversine formula
  * Source: https://www.movable-type.co.uk/scripts/latlong.html
  */
-Meter distance(const Pos &lhv, const Pos &rhv)
+inline Meter distance(const Pos &lhv, const Pos &rhv)
 {
     const double a = std::pow(std::sin(std::abs(lhv.latitude().value() - rhv.latitude().value()) / 2), 2) +
                      std::cos(lhv.latitude().value()) * std::cos(rhv.latitude().value()) *
@@ -105,7 +105,7 @@ Meter distance(const Pos &lhv, const Pos &rhv)
  * Euclidean distance
  * Source: https://en.wikipedia.org/wiki/Euclidean_distance
  */
-Meter distance(const Cartesian &lhv, const Cartesian &rhv)
+inline Meter distance(const Cartesian &lhv, const Cartesian &rhv)
 {
     return Meter(
         sqrt(pow((lhv.x - rhv.x).value(), 2) + pow((lhv.y - rhv.y).value(), 2) + pow((lhv.z - rhv.z).value(), 2)));
@@ -117,7 +117,7 @@ Meter distance(const Cartesian &lhv, const Cartesian &rhv)
  * Note that you must use only one point of view for every point you want to calculate, so all points
  * will be in the same cartesian coordinates system.
  */
-Cartesian get_topo(const Pos &point, const Pos &point_of_view)
+inline Cartesian get_topo(const Pos &point, const Pos &point_of_view)
 {
     // using wgs-84
     const double B = point.latitude().value();            // latitude, rad
@@ -162,7 +162,7 @@ Cartesian get_topo(const Pos &point, const Pos &point_of_view)
  * Get angle, which to rotate to robot will face north
  * Resource: https://blog.endaq.com/quaternions-for-orientation
  */
-double get_euler_z_angle(const sensor_msgs::msg::Imu &imu)
+inline double get_euler_z_angle(const sensor_msgs::msg::Imu &imu)
 {
     const auto w = imu.orientation.w;
     const auto x = imu.orientation.x;
@@ -175,7 +175,7 @@ double get_euler_z_angle(const sensor_msgs::msg::Imu &imu)
  * get_angle_to_waypoint
  * Get angle, which to rotate to robot will face waypoint. The angle is positive wherever robot and waypoint are
  */
-double get_angle_to_waypoint(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu)
+inline double get_angle_to_waypoint(const Cartesian &robot, const Cartesian &waypoint, const sensor_msgs::msg::Imu &imu)
 {
     const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
     const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
@@ -186,7 +186,7 @@ double get_angle_to_waypoint(const Cartesian &robot, const Cartesian &waypoint, 
     return angle_to_north + rn_wr_angle;
 }
 
-Plane get_plane(const Point &point, const Vector3D &lhv, const Vector3D &rhv)
+inline Plane get_plane(const Point &point, const Vector3D &lhv, const Vector3D &rhv)
 {
     const auto a = lhv.y * rhv.z - rhv.y * lhv.z;
     const auto b = lhv.x * rhv.z - rhv.x * lhv.z;
@@ -196,7 +196,7 @@ Plane get_plane(const Point &point, const Vector3D &lhv, const Vector3D &rhv)
     return {a, b, c, d};
 }
 
-Vector3D normalize(Vector3D vec)
+inline Vector3D normalize(Vector3D vec)
 {
     const auto m = abs(vec);
     return {vec.x / m, vec.y / m, vec.z / m};
@@ -206,7 +206,7 @@ Vector3D normalize(Vector3D vec)
  * get_angle_between_vectors_signed
  * Get angle between two 3D vectors, positive when lhv to the left of rhv
  */
-double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector3D &rhv)
+inline double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector3D &rhv)
 {
     return atan2((rhv ^ lhv) * Vector3D(0, 1, 0) /* the plane normal pointing up */, lhv * rhv);
 }
@@ -215,7 +215,7 @@ double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector3D &rhv
  * get_angle_to_waypoint_signed
  * Get angle, which to rotate to robot will face waypoint. The angle is positive when waypoint to the right of the robot
  */
-Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const Radian &robot_azimuth)
+inline Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const Radian &robot_azimuth)
 {
     const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
     const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
@@ -252,7 +252,7 @@ Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &way
  * Get a sign of a number.
  * Source: https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
  */
-template <typename T> int sign(T val)
+template <typename T> inline int sign(T val)
 {
     return (T(0) < val) - (val < T(0));
 }
@@ -262,7 +262,7 @@ namespace
 using SpeedToSet = double;
 using AccelerationDistance = double;
 } // namespace
-std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, double acceleration, double desired_distance)
+inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, double acceleration, double desired_distance)
 {
     double velocity_to_set = 0.f;
     double s_ac = pow(max_speed, 2) / (2 * acceleration); // distance, after which the velocity will become maximum

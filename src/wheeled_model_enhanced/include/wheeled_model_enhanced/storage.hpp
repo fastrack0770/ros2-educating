@@ -171,6 +171,10 @@ class Storage
         return _distance_to_waypoint_related;
     }
 
+    /**
+     * robot_azimuth
+     * Difference between the North and where the robot is facing
+     */
     Radian robot_azimuth() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
@@ -189,11 +193,25 @@ class Storage
             utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, robot_azimuth());
     }
 
+    Radian robot_imu_twist() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return _robot_imu_twist;
+    }
+
     void set_robot_length(Meter length)
     {
         const std::lock_guard<decltype(_m)> lock(_m);
 
         _robot_length = length;
+    }
+
+    Meter robot_length() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return _robot_length;
     }
 
   private:
@@ -220,8 +238,8 @@ class Storage
     sensor_msgs::msg::Imu _imu;
     Radian _angle_to_waypoint = 0.f;
 
-    Radian _robot_imu_twist = Degree(90);
-    Meter _robot_length = 1.5;
+    Radian _robot_imu_twist = 0;
+    Meter _robot_length = 0;
 
     nav_msgs::msg::Odometry _odometry;
 
