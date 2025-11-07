@@ -551,3 +551,53 @@ inline double operator-(builtin_interfaces::msg::Time lhv, const builtin_interfa
 
     return passed_time;
 }
+
+template <typename T> class Optional
+{
+  public:
+    Optional()
+    {
+    }
+    Optional(const T &value) : _has(true), _value(value)
+    {
+    }
+    Optional(T &&value) : _has(true), _value(std::move(value))
+    {
+    }
+    Optional(const Optional<T> &value) : Optional(*value)
+    {
+    }
+    Optional(Optional<T> &&value) : Optional(std::move(*value))
+    {
+        value._has = false;
+    }
+
+    constexpr T &operator*()
+    {
+        return _value;
+    }
+
+    constexpr const T &operator*() const
+    {
+        return _value;
+    }
+
+    constexpr T *operator->()
+    {
+        return &_value;
+    }
+
+    constexpr const T *operator->() const
+    {
+        return &_value;
+    }
+
+    bool has_value() const noexcept
+    {
+        return _has;
+    }
+
+  private:
+    bool _has = false;
+    T _value;
+};

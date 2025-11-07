@@ -191,5 +191,51 @@ TEST(types, builtin_interfaces_msg_Time)
 
         EXPECT_FLOAT_EQ(1.0087049007415771, lhv - rhv);
         EXPECT_FLOAT_EQ(-1.0087049007415771, rhv - lhv);
-    } 
+    }
+}
+
+struct OptionalTest
+{
+    OptionalTest(bool ia, bool ib) : a(ia), b(ib)
+    {
+    }
+    bool a;
+    bool b;
+};
+
+TEST(types, optional)
+{
+    // constructors
+    {
+        Optional<int> opt(3);
+        EXPECT_TRUE(opt.has_value());
+        EXPECT_EQ(3, *opt);
+    }
+    {
+        Optional<OptionalTest> opt({true, false});
+        EXPECT_TRUE(opt.has_value());
+        EXPECT_TRUE(opt->a);
+        EXPECT_FALSE(opt->b);
+    }
+    {
+        Optional<int> opt;
+        EXPECT_FALSE(opt.has_value());
+    }
+    {
+        const Optional<int> opt(5);
+        Optional<int> opt_copy(opt);
+        EXPECT_TRUE(opt.has_value());
+        EXPECT_EQ(5, *opt);
+
+        EXPECT_TRUE(opt_copy.has_value());
+        EXPECT_EQ(5, *opt_copy);
+    }
+    {
+        Optional<int> opt(5);
+        Optional<int> opt_copy(std::move(opt));
+        EXPECT_FALSE(opt.has_value());
+
+        EXPECT_TRUE(opt_copy.has_value());
+        EXPECT_EQ(5, *opt_copy);
+    }
 }
