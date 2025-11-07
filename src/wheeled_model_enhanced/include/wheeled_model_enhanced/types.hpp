@@ -12,6 +12,8 @@
 
 class Degree;
 
+template <typename T> class Optional;
+
 /**
  * Radian
  * To store value in radians
@@ -414,6 +416,7 @@ class Pos
     }
 
     friend std::ostream &operator<<(std::ostream &os, const Pos &rhv);
+    friend std::ostream &operator<<(std::ostream &os, const Optional<Pos> &rhv);
 
   private:
     Radian _latitude = 0.f;
@@ -552,10 +555,23 @@ inline double operator-(builtin_interfaces::msg::Time lhv, const builtin_interfa
     return passed_time;
 }
 
+struct Nullopt_t
+{
+    constexpr explicit Nullopt_t(int)
+    {
+    }
+};
+
+inline constexpr Nullopt_t Nullopt{0};
+
+// TODO add bad_optional_access
 template <typename T> class Optional
 {
   public:
-    Optional()
+    Optional() : _has(false)
+    {
+    }
+    Optional(Nullopt_t) : _has(false)
     {
     }
     Optional(const T &value) : _has(true), _value(value)
@@ -601,3 +617,23 @@ template <typename T> class Optional
     bool _has = false;
     T _value;
 };
+
+inline std::ostream &operator<<(std::ostream &os, const Optional<Pos> &rhv)
+{
+    if (not rhv.has_value())
+    {
+        return os << "{ No data }";
+    }
+
+    return os << "{ lat: " << rhv->_latitude << " long: " << rhv->_longitude << " alt: " << rhv->_altitude << "}";
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Optional<Cartesian> &rhv)
+{
+    if (not rhv.has_value())
+    {
+        return os << "{ No data }";
+    }
+
+    return os << "{ x: " << rhv->x << " y: " << rhv->y << " z: " << rhv->z << "}";
+}

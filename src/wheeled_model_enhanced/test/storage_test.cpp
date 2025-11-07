@@ -6,9 +6,9 @@ TEST(storage, just_created)
 {
     Storage storage;
 
-    EXPECT_EQ(Pos(0, 0, 0), storage.robot_gps_pos());
-    EXPECT_EQ(Cartesian(0, 0, 0), storage.robot_topo_pos());
-    EXPECT_EQ(Cartesian(0, 0, 0), storage.robot_related_pos());
+    EXPECT_FALSE(storage.robot_gps_pos().has_value());
+    EXPECT_FALSE(storage.robot_topo_pos().has_value());
+    EXPECT_FALSE(storage.robot_related_pos().has_value());
     EXPECT_EQ(Pos(0, 0, 0), storage.waypoint_gps_pos());
     EXPECT_EQ(Cartesian(0, 0, 0), storage.waypoint_topo_pos());
     EXPECT_EQ(Cartesian(0, 0, 0), storage.waypoint_related_pos());
