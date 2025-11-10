@@ -343,18 +343,11 @@ class Pos
     using ReachGoalAction = wheeled_model_enhanced::action::ReachGoal;
 
   public:
-    Pos()
+    constexpr Pos()
     {
     }
 
-    Pos(const Pos &copy)
-    {
-        _latitude = copy._latitude;
-        _longitude = copy._longitude;
-        _altitude = copy._altitude;
-    }
-
-    Pos(Radian latitude, Radian longitude, Meter altitude)
+    constexpr Pos(Radian latitude, Radian longitude, Meter altitude)
         : _latitude(latitude), _longitude(longitude), _altitude(altitude)
     {
     }
@@ -367,17 +360,17 @@ class Pos
         : _latitude(Degree(msg.latitude)), _longitude(Degree(msg.longitude)), _altitude(msg.altitude)
     {
     }
-    Radian latitude() const
+    constexpr Radian latitude() const
     {
         return _latitude;
     }
 
-    Radian longitude() const
+    constexpr Radian longitude() const
     {
         return _longitude;
     }
 
-    Meter altitude() const
+    constexpr Meter altitude() const
     {
         return _altitude;
     }
@@ -397,7 +390,7 @@ class Pos
         _altitude = new_alt;
     }
 
-    Pos &operator=(const sensor_msgs::msg::NavSatFix &msg)
+    constexpr Pos &operator=(const sensor_msgs::msg::NavSatFix &msg)
     {
         _latitude = Degree(msg.latitude);
         _longitude = Degree(msg.longitude);
@@ -405,12 +398,12 @@ class Pos
         return *this;
     }
 
-    bool operator==(const Pos &rhv) const noexcept
+    constexpr bool operator==(const Pos &rhv) const noexcept
     {
         return std::tie(_latitude, _longitude, _altitude) == std::tie(rhv._latitude, rhv._longitude, rhv._altitude);
     }
 
-    bool operator!=(const Pos &rhv) const noexcept
+    constexpr bool operator!=(const Pos &rhv) const noexcept
     {
         return !(*this == rhv);
     }
@@ -580,10 +573,10 @@ template <typename T> class Optional
     Optional(T &&value) : _has(true), _value(std::move(value))
     {
     }
-    Optional(const Optional<T> &value) : Optional(*value)
+    Optional(const Optional<T> &value) : _has(value._has), _value(value._value)
     {
     }
-    Optional(Optional<T> &&value) : Optional(std::move(*value))
+    Optional(Optional<T> &&value) : _has(value._has), _value(std::move(value._value))
     {
         value._has = false;
     }
@@ -611,6 +604,35 @@ template <typename T> class Optional
     bool has_value() const noexcept
     {
         return _has;
+    }
+
+    constexpr Optional<T> &operator=(const T &rhv)
+    {
+        _value = rhv;
+        _has = true;
+        return *this;
+    }
+
+    constexpr Optional<T> &operator=(const Optional<T> &rhv)
+    {
+        _value = rhv._value;
+        _has = rhv._has;
+        return *this;
+    }
+
+    void reset()
+    {
+        if (not _has)
+        {
+            return;
+        }
+
+        _has = false;
+
+        if constexpr (not std::is_trivially_destructible_v<T> and std::is_nothrow_destructible_v<T>)
+        {
+            _value.~T();
+        }
     }
 
   private:
