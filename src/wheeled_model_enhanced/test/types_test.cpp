@@ -196,6 +196,9 @@ TEST(types, builtin_interfaces_msg_Time)
 
 struct OptionalTest
 {
+    OptionalTest()
+    {
+    }
     OptionalTest(bool ia, bool ib) : a(ia), b(ib)
     {
     }
@@ -220,7 +223,7 @@ TEST(types, optional)
     // constructors
     {
         Optional<int> opt(3);
-        
+
         EXPECT_TRUE(opt.has_value());
         EXPECT_EQ(3, *opt);
     }
@@ -232,9 +235,17 @@ TEST(types, optional)
         EXPECT_FALSE(opt->b);
     }
     {
+        Optional<OptionalTest> opt;
+
+        EXPECT_FALSE(opt.has_value());
+        EXPECT_NO_THROW(opt->a);
+        EXPECT_NO_THROW(opt->b);
+    }
+    {
         Optional<int> opt;
 
         EXPECT_FALSE(opt.has_value());
+        EXPECT_NO_THROW(*opt);
     }
     {
         const Optional<int> opt(5);
@@ -269,29 +280,47 @@ TEST(types, optional)
         EXPECT_TRUE(opt.has_value());
         EXPECT_EQ(3, *opt);
     }
+    // constexpr Optional &operator=(const Optional &rhv)
     {
         Optional<int> opt(2);
-        int rhv = 3;
+        Optional<int> rhv(7);
+
+        EXPECT_EQ(2, *opt);
+
         opt = rhv;
 
-        EXPECT_TRUE(opt.has_value());
-        EXPECT_EQ(3, *opt);
-    }
-    // void reset()
-    {
-        Optional<int> opt(2);
-        opt.reset();
-
-        EXPECT_FALSE(opt.has_value());
+        EXPECT_EQ(7, *rhv);
+        EXPECT_EQ(7, *opt);
     }
     // void reset()
     {
         bool destructor_was_called = false;
-        const auto callback = [&destructor_was_called](){ destructor_was_called = true;};
+        const auto callback = [&destructor_was_called]() { destructor_was_called = true; };
         Optional<OptionalDestructorTest> opt({callback});
         opt.reset();
 
         EXPECT_FALSE(opt.has_value());
         EXPECT_TRUE(destructor_was_called);
+    }
+    // constexpr T &value()
+    {
+        constexpr Optional<int> opt;
+        EXPECT_THROW(opt.value(), BadOptionalAccess);
+    }
+    {
+        Optional<int> opt;
+        EXPECT_THROW(opt.value(), BadOptionalAccess);
+
+        opt = 7;
+        EXPECT_EQ(7, opt.value());
+    }
+    // constexpr const T &value() const
+    {
+        constexpr Optional<int> opt;
+        EXPECT_THROW(opt.value(), BadOptionalAccess);
+    }
+    {
+        constexpr Optional<int> opt(7);
+        EXPECT_EQ(7, opt.value());
     }
 }

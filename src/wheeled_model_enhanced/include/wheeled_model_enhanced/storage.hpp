@@ -49,7 +49,7 @@ class Storage
         _robot_pos.gps_pos = msg;
 
         // do related calculations
-        _robot_pos.topo_pos = utils::get_topo(*_robot_pos.gps_pos, *_robot_pos.gps_pos);
+        _robot_pos.topo_pos = utils::get_topo(_robot_pos.gps_pos.value(), _robot_pos.gps_pos.value());
         _robot_pos.related_pos = Cartesian(0, 0, 0);
 
         calculate_waypoint_coords();
@@ -106,8 +106,8 @@ class Storage
         // do related calculations
         if (_waypoint_pos.related_pos.has_value() and _robot_pos.related_pos.has_value())
         {
-            _angle_to_waypoint = utils::get_angle_to_waypoint_signed(*_robot_pos.related_pos,
-                                                                     *_waypoint_pos.related_pos, robot_azimuth());
+            _angle_to_waypoint = utils::get_angle_to_waypoint_signed(_robot_pos.related_pos.value(),
+                                                                     _waypoint_pos.related_pos.value(), robot_azimuth());
         }
     }
 
@@ -204,8 +204,8 @@ class Storage
         // do related calculations
         if (_waypoint_pos.related_pos.has_value() and _robot_pos.related_pos.has_value())
         {
-            _angle_to_waypoint = utils::get_angle_to_waypoint_signed(*_robot_pos.related_pos,
-                                                                     *_waypoint_pos.related_pos, robot_azimuth());
+            _angle_to_waypoint = utils::get_angle_to_waypoint_signed(_robot_pos.related_pos.value(),
+                                                                     _waypoint_pos.related_pos.value(), robot_azimuth());
         }
     }
 
@@ -235,25 +235,25 @@ class Storage
     {
         if (_waypoint_pos.gps_pos.has_value() and _robot_pos.gps_pos.has_value())
         {
-            _waypoint_pos.topo_pos = utils::get_topo(*_waypoint_pos.gps_pos, *_robot_pos.gps_pos);
+            _waypoint_pos.topo_pos = utils::get_topo(_waypoint_pos.gps_pos.value(), _robot_pos.gps_pos.value());
         }
 
         if (_waypoint_pos.topo_pos.has_value() and _robot_pos.topo_pos.has_value())
         {
-            _waypoint_pos.related_pos = *_waypoint_pos.topo_pos - *_robot_pos.topo_pos;
+            _waypoint_pos.related_pos = _waypoint_pos.topo_pos.value() - _robot_pos.topo_pos.value();
         }
     }
     void calculate_distances()
     {
         if (_waypoint_pos.gps_pos.has_value() and _robot_pos.gps_pos.has_value())
         {
-            _distance_to_waypoint_gps = utils::distance(*_robot_pos.gps_pos, *_waypoint_pos.gps_pos) - _robot_length;
+            _distance_to_waypoint_gps = utils::distance(_robot_pos.gps_pos.value(), _waypoint_pos.gps_pos.value()) - _robot_length;
         }
 
         if (_robot_pos.related_pos.has_value() and _waypoint_pos.related_pos.has_value())
         {
             _distance_to_waypoint_related =
-                utils::distance(*_robot_pos.related_pos, *_waypoint_pos.related_pos) - _robot_length;
+                utils::distance(_robot_pos.related_pos.value(), _waypoint_pos.related_pos.value()) - _robot_length;
         }
     }
 

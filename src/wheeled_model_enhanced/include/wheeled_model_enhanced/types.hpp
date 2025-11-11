@@ -557,26 +557,35 @@ struct Nullopt_t
 
 inline constexpr Nullopt_t Nullopt{0};
 
+class BadOptionalAccess : public std::exception
+{
+  public:
+    const char *what() const noexcept override
+    {
+        return "Bad Optional Access";
+    }
+};
+
 // TODO add bad_optional_access
 template <typename T> class Optional
 {
   public:
-    Optional() : _has(false)
+    constexpr Optional() : _has(false), _value()
     {
     }
-    Optional(Nullopt_t) : _has(false)
+    constexpr Optional(Nullopt_t) : _has(false), _value()
     {
     }
-    Optional(const T &value) : _has(true), _value(value)
+    constexpr Optional(const T &value) : _has(true), _value(value)
     {
     }
-    Optional(T &&value) : _has(true), _value(std::move(value))
+    constexpr Optional(T &&value) : _has(true), _value(std::move(value))
     {
     }
-    Optional(const Optional<T> &value) : _has(value._has), _value(value._value)
+    constexpr Optional(const Optional<T> &value) : _has(value._has), _value(value._value)
     {
     }
-    Optional(Optional<T> &&value) : _has(value._has), _value(std::move(value._value))
+    constexpr Optional(Optional<T> &&value) : _has(value._has), _value(std::move(value._value))
     {
         value._has = false;
     }
@@ -601,19 +610,38 @@ template <typename T> class Optional
         return &_value;
     }
 
-    bool has_value() const noexcept
+    constexpr bool has_value() const noexcept
     {
         return _has;
     }
 
-    constexpr Optional<T> &operator=(const T &rhv)
+    constexpr T &value()
+    {
+        if (not _has)
+        {
+            throw BadOptionalAccess();
+        }
+
+        return _value;
+    }
+    constexpr const T &value() const
+    {
+        if (not _has)
+        {
+            throw BadOptionalAccess();
+        }
+
+        return _value;
+    }
+
+    Optional &operator=(const T &rhv)
     {
         _value = rhv;
         _has = true;
         return *this;
     }
 
-    constexpr Optional<T> &operator=(const Optional<T> &rhv)
+    constexpr Optional &operator=(const Optional &rhv)
     {
         _value = rhv._value;
         _has = rhv._has;
