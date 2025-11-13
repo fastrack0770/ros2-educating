@@ -6,6 +6,8 @@
 #include "types.hpp"
 #include "utils.hpp"
 
+#include <mutex>
+
 /**
  * Storage
  * Keeps and calculates values related to robot movement
