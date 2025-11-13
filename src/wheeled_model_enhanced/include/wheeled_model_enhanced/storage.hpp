@@ -14,27 +14,30 @@ class Storage
 {
     struct PosExtended
     {
-        Pos gps_pos;
-        Cartesian topo_pos;
-        Cartesian related_pos; // the robot related pos is always zero
+        Optional<Pos> gps_pos;
+        Optional<Cartesian> topo_pos;
+        Optional<Cartesian> related_pos; // the robot related pos is always zero
     };
 
   public:
-    Pos robot_gps_pos() const noexcept
+    Optional<Pos> robot_gps_pos() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
+
         return _robot_pos.gps_pos;
     }
 
-    Cartesian robot_topo_pos() const noexcept
+    Optional<Cartesian> robot_topo_pos() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
+
         return _robot_pos.topo_pos;
     }
 
-    Cartesian robot_related_pos() const noexcept
+    Optional<Cartesian> robot_related_pos() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
+
         return _robot_pos.related_pos;
     }
 
@@ -45,27 +48,31 @@ class Storage
         _robot_pos.gps_pos = msg;
 
         // do related calculations
-        _robot_pos.topo_pos = utils::get_topo(_robot_pos.gps_pos, _robot_pos.gps_pos);
+        _robot_pos.topo_pos = utils::get_topo(_robot_pos.gps_pos.value(), _robot_pos.gps_pos.value());
+        _robot_pos.related_pos = Cartesian(0, 0, 0);
 
         calculate_waypoint_coords();
         calculate_distances();
     }
 
-    Pos waypoint_gps_pos() const noexcept
+    Optional<Pos> waypoint_gps_pos() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
+
         return _waypoint_pos.gps_pos;
     }
 
-    Cartesian waypoint_topo_pos() const noexcept
+    Optional<Cartesian> waypoint_topo_pos() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
+
         return _waypoint_pos.topo_pos;
     }
 
-    Cartesian waypoint_related_pos() const noexcept
+    Optional<Cartesian> waypoint_related_pos() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
+
         return _waypoint_pos.related_pos;
     }
 
@@ -94,8 +101,11 @@ class Storage
         _imu = imu;
 
         // do related calculations
-        _angle_to_waypoint =
-            utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, robot_azimuth());
+        if (_waypoint_pos.related_pos.has_value() and _robot_pos.related_pos.has_value())
+        {
+            _angle_to_waypoint = utils::get_angle_to_waypoint_signed(_robot_pos.related_pos.value(),
+                                                                     _waypoint_pos.related_pos.value(), robot_azimuth());
+        }
     }
 
     void set_odometry(const nav_msgs::msg::Odometry &new_data)
@@ -171,6 +181,10 @@ class Storage
         return _distance_to_waypoint_related;
     }
 
+    /**
+     * robot_azimuth
+     * Difference between the North and where the robot is facing
+     */
     Radian robot_azimuth() const noexcept
     {
         const std::lock_guard<decltype(_m)> lock(_m);
@@ -185,8 +199,18 @@ class Storage
         _robot_imu_twist = twist;
 
         // do related calculations
-        _angle_to_waypoint =
-            utils::get_angle_to_waypoint_signed(_robot_pos.related_pos, _waypoint_pos.related_pos, robot_azimuth());
+        if (_waypoint_pos.related_pos.has_value() and _robot_pos.related_pos.has_value())
+        {
+            _angle_to_waypoint = utils::get_angle_to_waypoint_signed(_robot_pos.related_pos.value(),
+                                                                     _waypoint_pos.related_pos.value(), robot_azimuth());
+        }
+    }
+
+    Radian robot_imu_twist() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return _robot_imu_twist;
     }
 
     void set_robot_length(Meter length)
@@ -196,17 +220,38 @@ class Storage
         _robot_length = length;
     }
 
+    Meter robot_length() const noexcept
+    {
+        const std::lock_guard<decltype(_m)> lock(_m);
+
+        return _robot_length;
+    }
+
   private:
     void calculate_waypoint_coords()
     {
-        _waypoint_pos.topo_pos = utils::get_topo(_waypoint_pos.gps_pos, _robot_pos.gps_pos);
-        _waypoint_pos.related_pos = _waypoint_pos.topo_pos - _robot_pos.topo_pos;
+        if (_waypoint_pos.gps_pos.has_value() and _robot_pos.gps_pos.has_value())
+        {
+            _waypoint_pos.topo_pos = utils::get_topo(_waypoint_pos.gps_pos.value(), _robot_pos.gps_pos.value());
+        }
+
+        if (_waypoint_pos.topo_pos.has_value() and _robot_pos.topo_pos.has_value())
+        {
+            _waypoint_pos.related_pos = _waypoint_pos.topo_pos.value() - _robot_pos.topo_pos.value();
+        }
     }
     void calculate_distances()
     {
-        _distance_to_waypoint_gps = utils::distance(_robot_pos.gps_pos, _waypoint_pos.gps_pos) - _robot_length;
-        _distance_to_waypoint_related =
-            utils::distance(_robot_pos.related_pos, _waypoint_pos.related_pos) - _robot_length;
+        if (_waypoint_pos.gps_pos.has_value() and _robot_pos.gps_pos.has_value())
+        {
+            _distance_to_waypoint_gps = utils::distance(_robot_pos.gps_pos.value(), _waypoint_pos.gps_pos.value()) - _robot_length;
+        }
+
+        if (_robot_pos.related_pos.has_value() and _waypoint_pos.related_pos.has_value())
+        {
+            _distance_to_waypoint_related =
+                utils::distance(_robot_pos.related_pos.value(), _waypoint_pos.related_pos.value()) - _robot_length;
+        }
     }
 
   private:
@@ -220,8 +265,8 @@ class Storage
     sensor_msgs::msg::Imu _imu;
     Radian _angle_to_waypoint = 0.f;
 
-    Radian _robot_imu_twist = Degree(90);
-    Meter _robot_length = 1.5;
+    Radian _robot_imu_twist = 0;
+    Meter _robot_length = 0;
 
     nav_msgs::msg::Odometry _odometry;
 

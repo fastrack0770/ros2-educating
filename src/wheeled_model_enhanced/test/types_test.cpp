@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "wheeled_model_enhanced/types.hpp"
+#include "wheeled_model_enhanced/utils.hpp"
 
 TEST(types, radian)
 {
@@ -97,10 +98,19 @@ TEST(types, kilometer)
 
 TEST(types, pos)
 {
-    // Pos(const Pos &copy)
+    // constexpr Pos()
     {
-        const Pos to_copy(0.5, 0.6, 0.7);
-        EXPECT_EQ(to_copy, Pos(to_copy));
+        constexpr Pos pos;
+        EXPECT_FLOAT_EQ(0, pos.latitude().value());
+        EXPECT_FLOAT_EQ(0, pos.longitude().value());
+        EXPECT_FLOAT_EQ(0, pos.altitude().value());
+    }
+    // constexpr Pos(Radian latitude, Radian longitude, Meter altitude)
+    {
+        constexpr Pos pos(5.1, 7.2, 9.3);
+        EXPECT_FLOAT_EQ(5.1, pos.latitude().value());
+        EXPECT_FLOAT_EQ(7.2, pos.longitude().value());
+        EXPECT_FLOAT_EQ(9.3, pos.altitude().value());
     }
     // Pos(std::shared_ptr<const ReachGoalAction::Goal> goal)
     {
@@ -111,6 +121,33 @@ TEST(types, pos)
         goal->goal_long = -23.2;
 
         EXPECT_EQ(Pos(Degree(123.22), Degree(-23.2), Meter(0)), Pos(goal)) << Pos(goal);
+    }
+    // Pos &operator=(const sensor_msgs::msg::NavSatFix &msg)
+    {
+        Pos pos(1, 2, 3);
+        sensor_msgs::msg::NavSatFix msg;
+        msg.latitude = Degree(Radian(1.23)).value();
+        msg.longitude = Degree(Radian(2.11)).value();
+        msg.altitude = 122;
+
+        pos = msg;
+
+        EXPECT_FLOAT_EQ(1.23, pos.latitude().value());
+        EXPECT_FLOAT_EQ(2.11, pos.longitude().value());
+        EXPECT_FLOAT_EQ(122, pos.altitude().value());
+    }
+    // constexpr bool operator==(const Pos &rhv) const noexcept
+    {
+        constexpr Pos lhv(1, 2, 3);
+        constexpr Pos rhv(1, 2, 3);
+
+        EXPECT_TRUE(lhv == rhv);
+    }
+    {
+        constexpr Pos lhv(1, 2, 3);
+        constexpr Pos rhv(1, 2, 3.1);
+
+        EXPECT_FALSE(lhv == rhv);
     }
     // pos getters and setters
     {
@@ -191,5 +228,136 @@ TEST(types, builtin_interfaces_msg_Time)
 
         EXPECT_FLOAT_EQ(1.0087049007415771, lhv - rhv);
         EXPECT_FLOAT_EQ(-1.0087049007415771, rhv - lhv);
-    } 
+    }
+}
+
+struct OptionalTest
+{
+    OptionalTest()
+    {
+    }
+    OptionalTest(bool ia, bool ib) : a(ia), b(ib)
+    {
+    }
+    bool a;
+    bool b;
+};
+
+struct OptionalDestructorTest
+{
+    OptionalDestructorTest(std::function<void()> callback) : _callback(callback)
+    {
+    }
+    ~OptionalDestructorTest()
+    {
+        _callback();
+    }
+    std::function<void()> _callback;
+};
+
+TEST(types, optional)
+{
+    // constructors
+    {
+        Optional<int> opt(3);
+
+        EXPECT_TRUE(opt.has_value());
+        EXPECT_EQ(3, *opt);
+    }
+    {
+        Optional<OptionalTest> opt({true, false});
+
+        EXPECT_TRUE(opt.has_value());
+        EXPECT_TRUE(opt->a);
+        EXPECT_FALSE(opt->b);
+    }
+    {
+        Optional<OptionalTest> opt;
+
+        EXPECT_FALSE(opt.has_value());
+        EXPECT_NO_THROW(opt->a);
+        EXPECT_NO_THROW(opt->b);
+    }
+    {
+        Optional<int> opt;
+
+        EXPECT_FALSE(opt.has_value());
+        EXPECT_NO_THROW(*opt);
+    }
+    {
+        const Optional<int> opt(5);
+        Optional<int> opt_copy(opt);
+
+        EXPECT_TRUE(opt.has_value());
+        EXPECT_EQ(5, *opt);
+        EXPECT_TRUE(opt_copy.has_value());
+        EXPECT_EQ(5, *opt_copy);
+    }
+    {
+        const Optional<int> opt;
+        Optional<int> opt_copy(opt);
+
+        EXPECT_FALSE(opt.has_value());
+        EXPECT_FALSE(opt_copy.has_value());
+    }
+    {
+        Optional<int> opt(5);
+        Optional<int> opt_copy(std::move(opt));
+
+        EXPECT_FALSE(opt.has_value());
+        EXPECT_TRUE(opt_copy.has_value());
+        EXPECT_EQ(5, *opt_copy);
+    }
+    // Optional<T> &operator=(const T &rhv)
+    {
+        Optional<int> opt;
+        int rhv = 3;
+        opt = rhv;
+
+        EXPECT_TRUE(opt.has_value());
+        EXPECT_EQ(3, *opt);
+    }
+    // constexpr Optional &operator=(const Optional &rhv)
+    {
+        Optional<int> opt(2);
+        Optional<int> rhv(7);
+
+        EXPECT_EQ(2, *opt);
+
+        opt = rhv;
+
+        EXPECT_EQ(7, *rhv);
+        EXPECT_EQ(7, *opt);
+    }
+    // void reset()
+    {
+        bool destructor_was_called = false;
+        const auto callback = [&destructor_was_called]() { destructor_was_called = true; };
+        Optional<OptionalDestructorTest> opt({callback});
+        opt.reset();
+
+        EXPECT_FALSE(opt.has_value());
+        EXPECT_TRUE(destructor_was_called);
+    }
+    // constexpr T &value()
+    {
+        constexpr Optional<int> opt;
+        EXPECT_THROW(opt.value(), BadOptionalAccess);
+    }
+    {
+        Optional<int> opt;
+        EXPECT_THROW(opt.value(), BadOptionalAccess);
+
+        opt = 7;
+        EXPECT_EQ(7, opt.value());
+    }
+    // constexpr const T &value() const
+    {
+        constexpr Optional<int> opt;
+        EXPECT_THROW(opt.value(), BadOptionalAccess);
+    }
+    {
+        constexpr Optional<int> opt(7);
+        EXPECT_EQ(7, opt.value());
+    }
 }
