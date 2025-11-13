@@ -2,6 +2,9 @@
 
 #include "wheeled_model_enhanced/action/reach_goal.hpp"
 
+#include "wheeled_model_enhanced/types/degree.hpp"
+#include "wheeled_model_enhanced/types/radian.hpp"
+
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 
 #include <atomic>
@@ -10,163 +13,7 @@
 #include <memory>
 #include <mutex>
 
-class Degree;
-
 template <typename T> class Optional;
-
-/**
- * Radian
- * To store value in radians
- */
-class Radian
-{
-  public:
-    constexpr Radian(double value) : _value(value)
-    {
-    }
-
-    constexpr Radian(Degree value);
-
-    constexpr double value() const noexcept
-    {
-        return _value;
-    }
-
-    constexpr friend Radian operator+(Radian lhv, const Radian &rhv)
-    {
-        return lhv._value + rhv._value;
-    }
-
-    constexpr Radian &operator+=(const Radian &rhv)
-    {
-        _value += rhv._value;
-        return *this;
-    }
-
-    constexpr friend Radian operator-(Radian lhv, const Radian &rhv)
-    {
-        return lhv._value - rhv._value;
-    }
-
-    constexpr Radian &operator-=(const Radian &rhv)
-    {
-        _value -= rhv._value;
-        return *this;
-    }
-
-    constexpr bool operator==(const Radian &rhv) const noexcept
-    {
-        return _value == rhv._value;
-    }
-
-    constexpr bool operator!=(const Radian &rhv) const noexcept
-    {
-        return !(*this == rhv);
-    }
-
-    constexpr bool operator<(const Radian &rhv) const noexcept
-    {
-        return _value < rhv._value;
-    }
-
-    constexpr bool operator>=(const Radian &rhv) const noexcept
-    {
-        return !(*this < rhv);
-    }
-
-    constexpr bool operator>(const Radian &rhv) const noexcept
-    {
-        return _value > rhv._value;
-    }
-
-    constexpr bool operator<=(const Radian &rhv) const noexcept
-    {
-        return !(*this > rhv);
-    }
-
-    constexpr bool operator<(const Degree &rhv) const noexcept;
-    constexpr bool operator>=(const Degree &rhv) const noexcept;
-    constexpr bool operator>(const Degree &rhv) const noexcept;
-    constexpr bool operator<=(const Degree &rhv) const noexcept;
-
-    Radian normalize() const noexcept
-    {
-        return std::fmod(_value, 2 * M_PI);
-    }
-
-    friend std::ostream &operator<<(std::ostream &os, const Radian &rhv);
-
-  private:
-    double _value = 0.f;
-};
-
-inline std::ostream &operator<<(std::ostream &os, const Radian &rhv)
-{
-    return os << rhv._value;
-}
-
-/**
- * Degree
- * To store value in degrees
- */
-class Degree
-{
-  public:
-    constexpr Degree(double value) : _value(value)
-    {
-    }
-
-    constexpr Degree(Radian value) : _value(value.value() * 180 / M_PI)
-    {
-    }
-
-    constexpr double value() const noexcept
-    {
-        return _value;
-    }
-
-    constexpr Radian normalize() const noexcept
-    {
-        return std::fmod(_value, 360);
-    }
-
-    constexpr bool operator==(const Degree &rhv) const noexcept
-    {
-        return _value == rhv._value;
-    }
-
-    constexpr bool operator!=(const Degree &rhv) const noexcept
-    {
-        return !(*this == rhv);
-    }
-
-  private:
-    double _value = 0.f;
-};
-
-inline constexpr Radian::Radian(Degree value) : _value(value.value() * M_PI / 180.0)
-{
-}
-
-constexpr bool Radian::operator<(const Degree &rhv) const noexcept
-{
-    return _value < Radian(rhv)._value;
-}
-
-constexpr bool Radian::operator>=(const Degree &rhv) const noexcept
-{
-    return !(*this < rhv);
-}
-
-constexpr bool Radian::operator>(const Degree &rhv) const noexcept
-{
-    return _value > Radian(rhv)._value;
-}
-
-constexpr bool Radian::operator<=(const Degree &rhv) const noexcept
-{
-    return !(*this > rhv);
-}
 
 class Kilometer;
 
@@ -666,18 +513,17 @@ template <typename T> class Optional
         }
     }
 
+    friend std::ostream &operator<<(std::ostream &os, const Optional &rhv)
+    {
+        if (not rhv.has_value())
+        {
+            return os << "{ No data }";
+        }
+
+        return os << *rhv;
+    }
+
   private:
     bool _has = false;
     T _value;
 };
-
-template<typename T>
-inline std::ostream &operator<<(std::ostream &os, const Optional<T> &rhv)
-{
-    if (not rhv.has_value())
-    {
-        return os << "{ No data }";
-    }
-
-    return os << *rhv;
-}
