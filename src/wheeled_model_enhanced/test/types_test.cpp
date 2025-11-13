@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "wheeled_model_enhanced/types.hpp"
+#include "wheeled_model_enhanced/utils.hpp"
 
 TEST(types, radian)
 {
@@ -97,10 +98,19 @@ TEST(types, kilometer)
 
 TEST(types, pos)
 {
-    // Pos(const Pos &copy)
+    // constexpr Pos()
     {
-        const Pos to_copy(0.5, 0.6, 0.7);
-        EXPECT_EQ(to_copy, Pos(to_copy));
+        constexpr Pos pos;
+        EXPECT_FLOAT_EQ(0, pos.latitude().value());
+        EXPECT_FLOAT_EQ(0, pos.longitude().value());
+        EXPECT_FLOAT_EQ(0, pos.altitude().value());
+    }
+    // constexpr Pos(Radian latitude, Radian longitude, Meter altitude)
+    {
+        constexpr Pos pos(5.1, 7.2, 9.3);
+        EXPECT_FLOAT_EQ(5.1, pos.latitude().value());
+        EXPECT_FLOAT_EQ(7.2, pos.longitude().value());
+        EXPECT_FLOAT_EQ(9.3, pos.altitude().value());
     }
     // Pos(std::shared_ptr<const ReachGoalAction::Goal> goal)
     {
@@ -111,6 +121,33 @@ TEST(types, pos)
         goal->goal_long = -23.2;
 
         EXPECT_EQ(Pos(Degree(123.22), Degree(-23.2), Meter(0)), Pos(goal)) << Pos(goal);
+    }
+    // Pos &operator=(const sensor_msgs::msg::NavSatFix &msg)
+    {
+        Pos pos(1, 2, 3);
+        sensor_msgs::msg::NavSatFix msg;
+        msg.latitude = Degree(Radian(1.23)).value();
+        msg.longitude = Degree(Radian(2.11)).value();
+        msg.altitude = 122;
+
+        pos = msg;
+
+        EXPECT_FLOAT_EQ(1.23, pos.latitude().value());
+        EXPECT_FLOAT_EQ(2.11, pos.longitude().value());
+        EXPECT_FLOAT_EQ(122, pos.altitude().value());
+    }
+    // constexpr bool operator==(const Pos &rhv) const noexcept
+    {
+        constexpr Pos lhv(1, 2, 3);
+        constexpr Pos rhv(1, 2, 3);
+
+        EXPECT_TRUE(lhv == rhv);
+    }
+    {
+        constexpr Pos lhv(1, 2, 3);
+        constexpr Pos rhv(1, 2, 3.1);
+
+        EXPECT_FALSE(lhv == rhv);
     }
     // pos getters and setters
     {

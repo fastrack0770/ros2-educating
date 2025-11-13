@@ -45,7 +45,6 @@ class Storage
     {
         const std::lock_guard<decltype(_m)> lock(_m);
 
-        _robot_pos = PosExtended();
         _robot_pos.gps_pos = msg;
 
         // do related calculations
@@ -80,8 +79,6 @@ class Storage
     void set_waypoint_pos(const sensor_msgs::msg::NavSatFix &msg)
     {
         const std::lock_guard<decltype(_m)> lock(_m);
-
-        _waypoint_pos = PosExtended();
 
         _waypoint_pos.gps_pos = msg;
 

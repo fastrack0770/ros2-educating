@@ -390,7 +390,7 @@ class Pos
         _altitude = new_alt;
     }
 
-    constexpr Pos &operator=(const sensor_msgs::msg::NavSatFix &msg)
+    Pos &operator=(const sensor_msgs::msg::NavSatFix &msg)
     {
         _latitude = Degree(msg.latitude);
         _longitude = Degree(msg.longitude);
@@ -566,7 +566,10 @@ class BadOptionalAccess : public std::exception
     }
 };
 
-// TODO add bad_optional_access
+/**
+ * Optional
+ * Similar to the std::optional from c++17 standard
+ */
 template <typename T> class Optional
 {
   public:
@@ -668,22 +671,13 @@ template <typename T> class Optional
     T _value;
 };
 
-inline std::ostream &operator<<(std::ostream &os, const Optional<Pos> &rhv)
+template<typename T>
+inline std::ostream &operator<<(std::ostream &os, const Optional<T> &rhv)
 {
     if (not rhv.has_value())
     {
         return os << "{ No data }";
     }
 
-    return os << "{ lat: " << rhv->_latitude << " long: " << rhv->_longitude << " alt: " << rhv->_altitude << "}";
-}
-
-inline std::ostream &operator<<(std::ostream &os, const Optional<Cartesian> &rhv)
-{
-    if (not rhv.has_value())
-    {
-        return os << "{ No data }";
-    }
-
-    return os << "{ x: " << rhv->x << " y: " << rhv->y << " z: " << rhv->z << "}";
+    return os << *rhv;
 }
