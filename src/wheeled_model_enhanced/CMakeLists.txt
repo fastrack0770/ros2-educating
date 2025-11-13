@@ -28,6 +28,8 @@ rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_t
 set(HEADERS
 include/wheeled_model_enhanced/types/radian.hpp
 include/wheeled_model_enhanced/types/degree.hpp
+include/wheeled_model_enhanced/types/meter.hpp
+include/wheeled_model_enhanced/types/kilometer.hpp
 include/wheeled_model_enhanced/types.hpp
 include/wheeled_model_enhanced/utils.hpp
 include/wheeled_model_enhanced/storage.hpp
