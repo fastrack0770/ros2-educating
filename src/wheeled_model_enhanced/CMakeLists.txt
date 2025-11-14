@@ -74,8 +74,25 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  set(TEST_SOURCES
+    test/main.cpp 
+    test/tutorial_test.cpp 
+    test/utils_test.cpp
+    test/types_test.cpp
+    test/types/degree_test.cpp
+    test/types/radian_test.cpp
+    test/types/meter_test.cpp
+    test/types/kilometer_test.cpp
+    test/types/cartesian_test.cpp
+    test/types/optional_test.cpp
+    test/types/plane_test.cpp
+    test/types/pos_test.cpp
+    test/types/vector3d_test.cpp
+    test/storage_test.cpp
+  )
+
   find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(${PROJECT_NAME}_test test/main.cpp test/tutorial_test.cpp test/utils_test.cpp test/types_test.cpp test/storage_test.cpp ${HEADERS} ${SOURCES})
+  ament_add_gtest(${PROJECT_NAME}_test ${TEST_SOURCES} ${HEADERS} ${SOURCES})
   ament_target_dependencies(${PROJECT_NAME}_test rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs nav_msgs)
   target_include_directories(${PROJECT_NAME}_test PUBLIC
     ../include
