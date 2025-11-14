@@ -27,6 +27,10 @@ jobs:
         sudo apt install ros-humble-desktop
         sudo apt install python3-colcon-common-extensions
 
+    - name: Install Gazebo
+      run: |
+        sudo apt install ros-humble-ros-ign
+        sudo apt install ros-humble-ros-ign-bridge
     - name: build package
       run: source /opt/ros/humble/setup.bash && colcon build --symlink-install --packages-up-to wheeled_model_enhanced
     - name: run
