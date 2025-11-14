@@ -25,21 +25,36 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 # Get support for using custom interfaces
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
+set(HEADERS
+include/wheeled_model_enhanced/types/degree.hpp
+include/wheeled_model_enhanced/types/radian.hpp
+include/wheeled_model_enhanced/types/meter.hpp
+include/wheeled_model_enhanced/types/kilometer.hpp
+include/wheeled_model_enhanced/types/cartesian.hpp
+include/wheeled_model_enhanced/types/optional.hpp
+include/wheeled_model_enhanced/types/plane.hpp
+include/wheeled_model_enhanced/types/pos.hpp
+include/wheeled_model_enhanced/types/vector3d.hpp
+include/wheeled_model_enhanced/types.hpp
+include/wheeled_model_enhanced/utils.hpp
+include/wheeled_model_enhanced/storage.hpp
+)
+
+set(SOURCES
+src/storage.cpp
+)
+
 # Actions
 add_executable(reach_goal_action_server
-  src/reach_goal_action_server.cpp
-  include/wheeled_model_enhanced/types.hpp
-  include/wheeled_model_enhanced/utils.hpp
-  include/wheeled_model_enhanced/storage.hpp)
+  ${HEADERS} ${SOURCES} src/reach_goal_action_server.cpp
+)
 ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs nav_msgs)
 target_include_directories(reach_goal_action_server PUBLIC include)
 target_link_libraries(reach_goal_action_server "${cpp_typesupport_target}")
 
 add_executable(reach_goal_action_client
-  src/reach_goal_action_client.cpp
-  include/wheeled_model_enhanced/types.hpp
-  include/wheeled_model_enhanced/utils.hpp
-  include/wheeled_model_enhanced/storage.hpp)
+  include/wheeled_model_enhanced/types.hpp src/reach_goal_action_client.cpp
+)
 ament_target_dependencies(reach_goal_action_client rclcpp action_msgs rclcpp_action)
 target_include_directories(reach_goal_action_client PUBLIC include)
 target_link_libraries(reach_goal_action_client "${cpp_typesupport_target}")
@@ -59,8 +74,25 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  set(TEST_SOURCES
+    test/main.cpp 
+    test/tutorial_test.cpp 
+    test/utils_test.cpp
+    test/types_test.cpp
+    test/types/degree_test.cpp
+    test/types/radian_test.cpp
+    test/types/meter_test.cpp
+    test/types/kilometer_test.cpp
+    test/types/cartesian_test.cpp
+    test/types/optional_test.cpp
+    test/types/plane_test.cpp
+    test/types/pos_test.cpp
+    test/types/vector3d_test.cpp
+    test/storage_test.cpp
+  )
+
   find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(${PROJECT_NAME}_test test/main.cpp test/tutorial_test.cpp test/utils_test.cpp test/types_test.cpp test/storage_test.cpp)
+  ament_add_gtest(${PROJECT_NAME}_test ${TEST_SOURCES} ${HEADERS} ${SOURCES})
   ament_target_dependencies(${PROJECT_NAME}_test rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs nav_msgs)
   target_include_directories(${PROJECT_NAME}_test PUBLIC
     ../include

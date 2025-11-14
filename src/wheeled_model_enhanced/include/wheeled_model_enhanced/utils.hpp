@@ -186,6 +186,8 @@ inline double get_angle_to_waypoint(const Cartesian &robot, const Cartesian &way
     return angle_to_north + rn_wr_angle;
 }
 
+using Point = Cartesian;
+
 inline Plane get_plane(const Point &point, const Vector3D &lhv, const Vector3D &rhv)
 {
     const auto a = lhv.y * rhv.z - rhv.y * lhv.z;
