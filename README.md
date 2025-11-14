@@ -1,4 +1,7 @@
 # ROS2 education project
+
+[![CI](https://github.com/fastrack0770/ros2-educating/actions/workflows/ci.yml/badge.svg)](https://github.com/fastrack0770/ros2-educating/actions/workflows/ci.yml)
+
 Based on udemy ROS2CRobotics course.  
 Contains two packages:  
 1. `udemy_ros2_pkg`. This package was made during the course completion. Using only as a reference material.  
