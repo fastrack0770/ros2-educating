@@ -70,10 +70,14 @@ Here parameters for nodes can be specified so they will be used in every launch.
 #### reach_goal_action_server
 Turning the robot to the waypoint. The result - the camera of the robot is facing the waypoint.  
 Available parameters:
-1. `angle_threshold`. Default value is `0.05`. Radians.  
-2. `distance_threshold`. Default value is `0.1`. Meters.  
-3. `max_angle_acceleration`. Default value is `2.0`. Radians/sec^2.  
-4. `max_angle_velocity`. Default value is `1`. Radians/sec.  
+1. `angle_threshold`. Float. Default value is `0.05`. Radians.  
+2. `distance_threshold`. Float. Default value is `0.1`. Meters.  
+3. `max_angle_acceleration`. Float. Default value is `2.0`. Radians/sec^2.  
+4. `max_angle_velocity`. Float. Default value is `1.0`. Radians/sec.  
+5. `robot_imu_twist`. Difference between IMU x-axe and the robot front. Float. Default value is `1.5707963267948966`. Radians.  
+6. `max_acceleration`. Max linear acceleration. Float. Default value is `1.0`. Meters/sec^2.  
+7. `max_velocity`. Max linear velocity. Float. Default value is `10.0`. Meters/sec.  
+8. `robot_length_in_m`. Because the GPS sensor is placed in the middle of the robot, the distance between this sensor and the robot front must be noted for achieving the waypoint gracefully. Float. Default value is `1.5`. Meters.  
 
 #### reach_goal_action_client
 Using to trigger reach_goal_action_server.  
