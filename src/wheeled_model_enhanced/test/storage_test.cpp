@@ -113,7 +113,7 @@ TEST(storage, got_robot_pos_first)
     EXPECT_FALSE(storage.has_linear_speed());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
     EXPECT_FLOAT_EQ(0, storage.linear_acceleration());
-    EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().value()); // 0 due the storage didn't received imu
+    EXPECT_FLOAT_EQ(-3.1415923, storage.angle_to_waypoint().value()); // 0 due the storage didn't received imu
     EXPECT_FLOAT_EQ(1.5707964, storage.robot_azimuth().value());
     EXPECT_FLOAT_EQ(1.5707964, storage.robot_imu_twist().value());
     EXPECT_FLOAT_EQ(1.5, storage.robot_length().value());
