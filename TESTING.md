@@ -6,12 +6,12 @@ Testing sequence:
 4. Fix the movement result
 
 Points to turn to (to place a waypoint on) in `{x, y}`:
-1. 10; 10 - turn to the right
-2. 10; 0 - to the left
-3. 10; -10 - to the left 
-4. 0; -10 - to the left
-5. -10; -10 - to the left
-6. -10; 0 - no turning, just going forward
-7. -10; 10 - to the right
-8. 0; 10 - to the right
-9. -2; 0 - no movement due the goal is already reached
+1. 10; 10 - turn to the right; (lat long) -0.4011918 -0.75402419
+2. 10; 0 - to the left; (lat long) -0.40119337 -0.75402419
+3. 10; -10 - to the left; (lat long) -0.40119495 -0.75402419
+4. 0; -10 - to the left; (lat long) -0.40119495 -0.75402589
+5. -10; -10 - to the left; (lat long) -0.40119495 -0.75402759
+6. -10; 0 - no turning, just going forward; (lat long) -0.40119337 -0.75402759
+7. -10; 10 - to the right; (lat long) -0.4011918 -0.75402759
+8. 0; 10 - to the right; (lat long) -0.4011918 -0.75402589
+9. -2; 0 - no movement due the goal is already reached; (lat long) -0.40119337 -0.75402623

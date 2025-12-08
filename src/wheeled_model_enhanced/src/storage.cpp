@@ -56,15 +56,15 @@ Optional<Cartesian> Storage::waypoint_related_pos() const noexcept
     return _waypoint_pos.related_pos;
 }
 
-void Storage::set_waypoint_pos(const sensor_msgs::msg::NavSatFix &msg)
+void Storage::set_waypoint_pos(Pos msg)
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
     _waypoint_pos.gps_pos = msg;
 
-    // do related calculations
     calculate_waypoint_coords();
     calculate_distances();
+    calculate_waypoint_angle();
 }
 
 Meter Storage::distance_to_waypoint_gps() const noexcept
@@ -80,12 +80,7 @@ void Storage::set_imu(const sensor_msgs::msg::Imu &imu)
 
     _imu = imu;
 
-    // do related calculations
-    if (_waypoint_pos.related_pos.has_value() and _robot_pos.related_pos.has_value())
-    {
-        _angle_to_waypoint = utils::get_angle_to_waypoint_signed(_robot_pos.related_pos.value(),
-                                                                 _waypoint_pos.related_pos.value(), robot_azimuth());
-    }
+    calculate_waypoint_angle();
 }
 
 void Storage::set_odometry(const nav_msgs::msg::Odometry &new_data)
@@ -178,12 +173,7 @@ void Storage::set_robot_imu_twist(Radian twist)
 
     _robot_imu_twist = twist;
 
-    // do related calculations
-    if (_waypoint_pos.related_pos.has_value() and _robot_pos.related_pos.has_value())
-    {
-        _angle_to_waypoint = utils::get_angle_to_waypoint_signed(_robot_pos.related_pos.value(),
-                                                                 _waypoint_pos.related_pos.value(), robot_azimuth());
-    }
+    calculate_waypoint_angle();
 }
 
 Radian Storage::robot_imu_twist() const noexcept
@@ -231,5 +221,14 @@ void Storage::calculate_distances()
     {
         _distance_to_waypoint_related =
             utils::distance(_robot_pos.related_pos.value(), _waypoint_pos.related_pos.value()) - _robot_length;
+    }
+}
+
+void Storage::calculate_waypoint_angle()
+{
+    if (_waypoint_pos.related_pos.has_value() and _robot_pos.related_pos.has_value())
+    {
+        _angle_to_waypoint = utils::get_angle_to_waypoint_signed(_robot_pos.related_pos.value(),
+                                                                 _waypoint_pos.related_pos.value(), robot_azimuth());
     }
 }

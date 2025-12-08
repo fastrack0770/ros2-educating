@@ -87,27 +87,6 @@ class ReachGoalActionServerNode : public rclcpp::Node
                 create_subscription<sensor_msgs::msg::NavSatFix>("/wheeled_model_enhanced/navsat", 10, callback);
         }
 
-        // waypoint navsat sub
-        {
-            const auto callback = [this](const sensor_msgs::msg::NavSatFix &msg) {
-                _storage.set_waypoint_pos(msg);
-
-                try
-                {
-                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
-                                                         << "WAYPOINT gps: " << _storage.waypoint_gps_pos()
-                                                         << ", topoc: " << _storage.waypoint_topo_pos()
-                                                         << ", related: " << _storage.waypoint_related_pos());
-                }
-                catch (const std::exception &e)
-                {
-                    RCLCPP_ERROR_STREAM(get_logger(), "Got exception while calculate topocentric coords: " << e.what());
-                }
-            };
-
-            _waypoint_navsat_sub = create_subscription<sensor_msgs::msg::NavSatFix>("/waypoint/navsat", 10, callback);
-        }
-
         // imu sub
         {
             const auto callback = [this](const sensor_msgs::msg::Imu &msg) {
@@ -167,6 +146,8 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                 return rclcpp_action::GoalResponse::REJECT;
             }
+
+            _storage.set_waypoint_pos(goal);
 
             _is_running = true; // prepare to run threads
 
@@ -245,7 +226,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
                     }
                     else
                     {
-                        RCLCPP_INFO_STREAM(get_logger(), "Goal is already reached");
+                        RCLCPP_INFO_STREAM(get_logger(), "Angle is already reached");
                     }
 
                     while (_is_running and not is_angle_reached())
@@ -396,7 +377,6 @@ class ReachGoalActionServerNode : public rclcpp::Node
     Storage _storage;
 
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _robot_navsat_sub;
-    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _waypoint_navsat_sub;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr _imu_sub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr _speed_pub;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _odometry_sub;
