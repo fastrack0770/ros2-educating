@@ -32,7 +32,7 @@ class ReachGoalActionClientNode : public rclcpp::Node
         double longitude;
         try
         {
-            std::cout << "Write latitude (double) and longitude (double) separated by space: ";
+            std::cout << "Write latitude (double) and longitude (double) separated by space in RADS: ";
             std::cin >> latitude >> longitude;
         }
         catch (const std::exception &e)
@@ -48,8 +48,8 @@ class ReachGoalActionClientNode : public rclcpp::Node
         goal_msg.goal_lat = latitude;
         goal_msg.goal_long = longitude;
 
-        RCLCPP_INFO_STREAM(get_logger(), "Sending goal with parameters lat: " << goal_msg.goal_lat
-                                                                              << ", long: " << goal_msg.goal_long);
+        RCLCPP_INFO_STREAM(get_logger(), "Sending goal with parameters in rads lat: " << goal_msg.goal_lat << ", long: "
+                                                                                      << goal_msg.goal_long);
 
         auto send_goal_options = rclcpp_action::Client<ReachGoalAction>::SendGoalOptions();
         const auto goal_callback = [this](GoalHandle::SharedPtr future) {
@@ -68,7 +68,7 @@ class ReachGoalActionClientNode : public rclcpp::Node
 
         const auto feedback_callback = [this](GoalHandle::SharedPtr,
                                               std::shared_ptr<const ReachGoalAction::Feedback> feedback) {
-            RCLCPP_INFO_STREAM(get_logger(), "Feedback: " << feedback->distance_to_point);
+            RCLCPP_INFO_STREAM(get_logger(), "Meters to the goal: " << feedback->distance_to_point);
         };
         send_goal_options.feedback_callback = feedback_callback;
 
