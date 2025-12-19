@@ -39,3 +39,5 @@ Form is `ros2 run`, next package name, next node name(?)
 `ros2 run ros_ign_bridge parameter_bridge /camera@sensor_msgs/msg/Image[ignition.msgs.Image --ros-args -r /camera:=/camera/image_raw` - to make a bridge for camera  
 
 `ign gazebo -v 4 -r world_name_.sdf --gui-config config_name.config` - to run gazebo simulation with specific gui config  
+
+`code /usr/share/ignition/ignition-gazebo6/worlds` - to open all worlds with simulations examples

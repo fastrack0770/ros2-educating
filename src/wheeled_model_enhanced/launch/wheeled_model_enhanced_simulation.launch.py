@@ -49,6 +49,7 @@ def generate_launch_description():
                     "/waypoint/navsat@sensor_msgs/msg/NavSatFix@ignition.msgs.NavSat",
                     "/model/wheeled_model_enhanced/odometry@nav_msgs/msg/Odometry[ignition.msgs.Odometry",
                     "/model/wheeled_model_enhanced/tf@geometry_msgs/msg/PoseArray[ignition.msgs.Pose_V",
+                    "/lidar@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan",
                 ],
                 remappings=[
                     ("/model/wheeled_model_enhanced/cmd_vel", "cmd_vel"),

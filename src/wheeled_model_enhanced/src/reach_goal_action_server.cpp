@@ -5,6 +5,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 
 #include "wheeled_model_enhanced/action/reach_goal.hpp"
@@ -135,6 +136,23 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
             _odometry_sub =
                 create_subscription<nav_msgs::msg::Odometry>("/model/wheeled_model_enhanced/odometry", 10, callback);
+        }
+
+        // lidar sub
+        {
+            const auto callback = [this](const sensor_msgs::msg::LaserScan &) {
+                try
+                {
+                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000, "got lidar info");
+                }
+                catch (const std::exception &e)
+                {
+                    RCLCPP_ERROR_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
+                                                 "Got exception while getting lidar info: " << e.what());
+                }
+            };
+
+            _lidar_sub = create_subscription<sensor_msgs::msg::LaserScan>("/lidar", 10, callback);
         }
 
         const auto handle_goal =
@@ -380,6 +398,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr _imu_sub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr _speed_pub;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _odometry_sub;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr _lidar_sub;
 
     std::atomic_bool _is_running{false};
 };
