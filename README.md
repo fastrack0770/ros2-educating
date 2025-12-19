@@ -50,6 +50,7 @@ The camera is providing a video stream. The wheels of the robot can be controlle
 5. `/wheeled_model_enhanced/navsat` (`sensor_msgs/msg/NavSatFix`) - to get the robot GPS data
 6. `/model/wheeled_model_enhanced/odometry` (`nav_msgs/msg/Odometry`) - for the robot odometry
 7. `/model/wheeled_model_enhanced/tf` (`geometry_msgs/msg/PoseArray`) - for the robot positioning (**Note**: the robot is moving in the ENU basis, so the `tf` info can't be used to understand where the robot is directly)  
+8. `/lidar` (`sensor_msgs/msg/LaserScan`) - for the robot lidar  
 
 #### waypoint
 it's a stick with a sphere on it and with a square base. The sphere contains the GPS sensor. Created to simplify debugging of robot's moving.  
