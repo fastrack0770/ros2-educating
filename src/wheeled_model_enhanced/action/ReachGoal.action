@@ -1,6 +1,6 @@
 # Goal
-float64 goal_lat # latitude
-float64 goal_long # longitude
+float64 goal_lat # latitude in rad
+float64 goal_long # longitude in rad
 ---
 # Result
 float32 elapsed_time # in seconds

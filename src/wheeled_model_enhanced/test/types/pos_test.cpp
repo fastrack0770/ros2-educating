@@ -26,7 +26,7 @@ TEST(types, pos)
         goal->goal_lat = 123.22;
         goal->goal_long = -23.2;
 
-        EXPECT_EQ(Pos(Degree(123.22), Degree(-23.2), Meter(0)), Pos(goal)) << Pos(goal);
+        EXPECT_EQ(Pos(123.22, -23.2, Meter(0)), Pos(goal)) << Pos(goal);
     }
     // Pos &operator=(const sensor_msgs::msg::NavSatFix &msg)
     {

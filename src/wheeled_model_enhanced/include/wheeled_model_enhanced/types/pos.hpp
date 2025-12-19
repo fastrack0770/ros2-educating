@@ -27,7 +27,7 @@ class Pos
     }
 
     Pos(std::shared_ptr<const ReachGoalAction::Goal> goal)
-        : _latitude(Degree(goal->goal_lat)), _longitude(Degree(goal->goal_long)), _altitude(0.f)
+        : _latitude(goal->goal_lat), _longitude(goal->goal_long), _altitude(0.f)
     {
     }
     Pos(const sensor_msgs::msg::NavSatFix &msg)

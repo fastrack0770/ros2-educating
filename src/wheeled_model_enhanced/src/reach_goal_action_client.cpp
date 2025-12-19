@@ -25,12 +25,31 @@ class ReachGoalActionClientNode : public rclcpp::Node
 
     void prompt_user_for_goal()
     {
-        auto goal_msg = ReachGoalAction::Goal();
-
         RCLCPP_INFO_STREAM(get_logger(), "Wait for server");
         _action_client->wait_for_action_server();
 
-        RCLCPP_INFO_STREAM(get_logger(), "Sending goal");
+        double latitude;
+        double longitude;
+        try
+        {
+            std::cout << "Write latitude (double) and longitude (double) separated by space in RADS: ";
+            std::cin >> latitude >> longitude;
+        }
+        catch (const std::exception &e)
+        {
+            RCLCPP_ERROR_STREAM(get_logger(), "Got exception on input: " << e.what());
+
+            rclcpp::shutdown();
+            return;
+        }
+
+        auto goal_msg = ReachGoalAction::Goal();
+
+        goal_msg.goal_lat = latitude;
+        goal_msg.goal_long = longitude;
+
+        RCLCPP_INFO_STREAM(get_logger(), "Sending goal with parameters in rads lat: " << goal_msg.goal_lat << ", long: "
+                                                                                      << goal_msg.goal_long);
 
         auto send_goal_options = rclcpp_action::Client<ReachGoalAction>::SendGoalOptions();
         const auto goal_callback = [this](GoalHandle::SharedPtr future) {
@@ -48,8 +67,8 @@ class ReachGoalActionClientNode : public rclcpp::Node
         send_goal_options.goal_response_callback = goal_callback;
 
         const auto feedback_callback = [this](GoalHandle::SharedPtr,
-                                          std::shared_ptr<const ReachGoalAction::Feedback> feedback) {
-            RCLCPP_INFO_STREAM(get_logger(), "Feedback: " << feedback->distance_to_point);
+                                              std::shared_ptr<const ReachGoalAction::Feedback> feedback) {
+            RCLCPP_INFO_STREAM(get_logger(), "Meters to the goal: " << feedback->distance_to_point);
         };
         send_goal_options.feedback_callback = feedback_callback;
 
@@ -67,7 +86,7 @@ class ReachGoalActionClientNode : public rclcpp::Node
                 RCLCPP_INFO_STREAM(get_logger(), "Unknown");
             }
 
-            rclcpp::shutdown();
+            prompt_user_for_goal(); // wait for new waypoint again
         };
 
         send_goal_options.result_callback = result_callback;

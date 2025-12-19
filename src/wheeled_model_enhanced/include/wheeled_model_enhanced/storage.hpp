@@ -32,7 +32,7 @@ class Storage
     Optional<Cartesian> waypoint_topo_pos() const noexcept;
     Optional<Cartesian> waypoint_related_pos() const noexcept;
 
-    void set_waypoint_pos(const sensor_msgs::msg::NavSatFix &msg);
+    void set_waypoint_pos(Pos);
 
     Meter distance_to_waypoint_gps() const noexcept;
     Meter distance_to_waypoint_related() const noexcept;
@@ -70,6 +70,7 @@ class Storage
   private:
     void calculate_waypoint_coords();
     void calculate_distances();
+    void calculate_waypoint_angle();
 
   private:
     mutable std::recursive_mutex _m;

@@ -38,7 +38,7 @@ Contains:
 All models was created by using gazebo model editor.  
 
 #### wheeled_model_enhanced
-It's a robot with four wheels on its chassis. The front of the robot contains a rod with a camera on it. In the middle of the top of the chassis there is a sensor block. The sensor block contains:  
+It's a robot with four wheels on a chassis. The front of the robot contains a rod with a camera on it. In the middle of the top of the chassis there is a sensor block. The sensor block contains:  
 1. IMU sensor
 2. GPS sensor
 
@@ -52,7 +52,7 @@ The camera is providing a video stream. The wheels of the robot can be controlle
 7. `/model/wheeled_model_enhanced/tf` (`geometry_msgs/msg/PoseArray`) - for the robot positioning (**Note**: the robot is moving in the ENU basis, so the `tf` info can't be used to understand where the robot is directly)  
 
 #### waypoint
-it's a stick with a sphere on it and with a square base. The sphere contains the GPS sensor. Created to simplify a debugging of the robot moving.  
+it's a stick with a sphere on it and with a square base. The sphere contains the GPS sensor. Created to simplify debugging of robot's moving.  
 
 Available topics:
 1. `/waypoint/navsat` (`sensor_msgs/msg/NavSatFix`) - to get the waypoint GPS data  
@@ -61,14 +61,15 @@ Available topics:
 Endless plane ground.  
 
 ### World
-Contains `wheeled_model_enhanced`, `waypoint`, and `plane ground`.  
+Contains `wheeled_model_enhanced` and `plane ground`.  
 
 ### Launch file
 Here parameters for nodes can be specified so they will be used in every launch.  
 
 ### Nodes
 #### reach_goal_action_server
-Turning the robot to the waypoint. The result - the camera of the robot is facing the waypoint.  
+Turning the robot and then moves to the goal. The result - the camera of the robot is facing the goal, the robot is near the goal.  
+
 Available parameters:
 1. `angle_threshold`. Float. Default value is `0.05`. Radians.  
 2. `distance_threshold`. Float. Default value is `0.1`. Meters.  
@@ -80,4 +81,5 @@ Available parameters:
 8. `robot_length_in_m`. Because the GPS sensor is placed in the middle of the robot, the distance between this sensor and the robot front must be noted for achieving the waypoint gracefully. Float. Default value is `1.5`. Meters.  
 
 #### reach_goal_action_client
-Using to trigger reach_goal_action_server.  
+Sends a goal to the server. Runs infinitely.  
+Example of a goal (values in rads): `-0.40119337 -0.75402759`, where the first number is `latitude`, and the second number is `longitude`.
