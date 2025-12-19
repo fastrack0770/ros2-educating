@@ -82,4 +82,4 @@ Available parameters:
 
 #### reach_goal_action_client
 Sends a goal to the server. Runs infinitely.  
-Example of a goal: `-0.40119337 -0.75402759`, where the first number is `latitude`, and the second number is `longitude`.
+Example of a goal (values in rads): `-0.40119337 -0.75402759`, where the first number is `latitude`, and the second number is `longitude`.
