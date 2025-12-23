@@ -45,6 +45,7 @@ src/storage.cpp
 )
 
 # Actions
+# reach_goal_action_server
 add_executable(reach_goal_action_server
   ${HEADERS} ${SOURCES} src/reach_goal_action_server.cpp
 )
@@ -52,6 +53,7 @@ ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_act
 target_include_directories(reach_goal_action_server PUBLIC include)
 target_link_libraries(reach_goal_action_server "${cpp_typesupport_target}")
 
+# reach_goal_action_client
 add_executable(reach_goal_action_client
   include/wheeled_model_enhanced/types.hpp src/reach_goal_action_client.cpp
 )
@@ -59,10 +61,19 @@ ament_target_dependencies(reach_goal_action_client rclcpp action_msgs rclcpp_act
 target_include_directories(reach_goal_action_client PUBLIC include)
 target_link_libraries(reach_goal_action_client "${cpp_typesupport_target}")
 
+# integration_test
+add_executable(integration_test
+  include/wheeled_model_enhanced/types.hpp src/integration_test.cpp
+)
+ament_target_dependencies(integration_test rclcpp action_msgs rclcpp_action)
+target_include_directories(integration_test PUBLIC include)
+target_link_libraries(integration_test "${cpp_typesupport_target}")
+
 # Install
 install(TARGETS
   reach_goal_action_server
   reach_goal_action_client
+  integration_test
   DESTINATION lib/${PROJECT_NAME}
 )
 

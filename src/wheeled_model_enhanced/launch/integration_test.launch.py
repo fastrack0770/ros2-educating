@@ -24,12 +24,17 @@ simulation_world_file_path = Path(
 )
 simulation_models_file_path = Path(wheeled_model_enhanced_path, "models")
 
-simulation = ExecuteProcess(
-    cmd=["ign", "gazebo", "-r", simulation_world_file_path], output="screen"
-)
-
-
+# TODO integration_test node must run strictly after server node and bridges were initialized
 def generate_launch_description():
+    simulation = ExecuteProcess(
+        cmd=["ign", "gazebo", "-r", simulation_world_file_path], output="screen"
+    )
+
+    integration_test = Node(
+        package="wheeled_model_enhanced",
+        executable="integration_test",
+        name="integration_test_node",
+    )
 
     return LaunchDescription(
         [
@@ -66,16 +71,22 @@ def generate_launch_description():
                     {"distance_threshold": 1.0},
                     {"max_angle_acceleration": 2.0},
                     {"max_angle_velocity": 1.0},
-                    {"robot_imu_twist": 1.5707963267948966}, # in rads
+                    {"robot_imu_twist": 1.5707963267948966},  # in rads
                     {"max_acceleration": 1.0},
                     {"max_velocity": 10.0},
                     {"robot_length_in_m": 1.5},
                 ],
-                # prefix=['gdbserver localhost:3000'] # Left for debugging purposes
             ),
+            integration_test,
             # Actually doesnt work. There are three copies of Node above that are created, and OnProcessExit kills only one of them
             # Btw if stop the simulation by Ctrl+C, all three copies will stop gracefully
             # Reference to issue: https://github.com/fastrack0770/ros2-educating/issues/1
+            RegisterEventHandler(
+                event_handler=OnProcessExit(
+                    target_action=integration_test,
+                    on_exit=[EmitEvent(event=Shutdown())],
+                )
+            ),
             RegisterEventHandler(
                 event_handler=OnProcessExit(
                     target_action=simulation, on_exit=[EmitEvent(event=Shutdown())]
