@@ -9,24 +9,24 @@ TEST(utils, abs)
 
 TEST(utils, earth_radius_at)
 {
-    EXPECT_FLOAT_EQ(6378137.0, utils::earth_radius_at(Pos(Degree(0), Degree(12), 0)));
+    EXPECT_FLOAT_EQ(6378137.0, utils::earth_radius_at(Pos(Radian(Degree(0)), Radian(Degree(12)), 0)));
     // must be 6356752.314, but is not
-    EXPECT_FLOAT_EQ(6360159, utils::earth_radius_at(Pos(Degree(66.564056), Degree(12), 122)));
+    EXPECT_FLOAT_EQ(6360159, utils::earth_radius_at(Pos(Radian(Degree(66.564056)), Radian(Degree(12)), 122)));
 }
 
 TEST(utils, earth_radius_at_2)
 {
-    EXPECT_FLOAT_EQ(6378137.0, utils::earth_radius_at_2(Pos(Degree(0), Degree(12), 0)));
+    EXPECT_FLOAT_EQ(6378137.0, utils::earth_radius_at_2(Pos(Radian(Degree(0)), Radian(Degree(12)), 0)));
     // must be 6356752.314, but is not
-    EXPECT_FLOAT_EQ(6360135, utils::earth_radius_at_2(Pos(Degree(66.564056), Degree(12), 122)));
+    EXPECT_FLOAT_EQ(6360135, utils::earth_radius_at_2(Pos(Radian(Degree(66.564056)), Radian(Degree(12)), 122)));
 }
 
 TEST(utils, distance)
 {
     // distance must be 376099.61 according to https://gps-coordinates.org/distance-between-coordinates.php
     // difference is not high, so will try to use it
-    EXPECT_FLOAT_EQ(376094.41, utils::distance(Pos(Degree(35.652832), Degree(139.839478), 0), // tokyo
-                                               Pos(Degree(35.011665), Degree(135.768326), 0))
+    EXPECT_FLOAT_EQ(376094.41, utils::distance(Pos(Radian(Degree(35.652832)), Radian(Degree(139.839478)), 0), // tokyo
+                                               Pos(Radian(Degree(35.011665)), Radian(Degree(135.768326)), 0))
                                    .value()); // kyoto
 }
 
@@ -131,28 +131,28 @@ TEST(utils, get_angle_to_waypoint_signed)
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, 3);
 
-        EXPECT_FLOAT_EQ(135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(45)).value()));
+        EXPECT_FLOAT_EQ(135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(Degree(45))).value()));
     }
     // north to the right of the robot by 45 degree, angle to turn is 135
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, -3);
 
-        EXPECT_FLOAT_EQ(-45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(45)).value()));
+        EXPECT_FLOAT_EQ(-45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(Degree(45))).value()));
     }
     // north to the left of the robot by 45 degree, angle to turn is -135
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, 3);
 
-        EXPECT_FLOAT_EQ(45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(-45)).value()));
+        EXPECT_FLOAT_EQ(45, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(Degree(-45))).value()));
     }
     // north to the left of the robot by 45 degree, angle to turn is 45
     {
         const Cartesian robot(0, 0, 0);
         const Cartesian waypoint(0, 0, -3);
 
-        EXPECT_FLOAT_EQ(-135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Degree(-45)).value()));
+        EXPECT_FLOAT_EQ(-135, to_deg(get_angle_to_waypoint_signed(robot, waypoint, Radian(Degree(-45))).value()));
     }
     // waypoint to the left
     {

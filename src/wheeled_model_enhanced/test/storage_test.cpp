@@ -14,14 +14,14 @@ TEST(storage, just_created)
     EXPECT_FALSE(storage.waypoint_related_pos().has_value());
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_gps().value());
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_related().value());
-    EXPECT_FLOAT_EQ(0, storage.angular_speed());
-    EXPECT_FALSE(storage.has_angular_speed());
-    EXPECT_FLOAT_EQ(0, storage.linear_speed());
-    EXPECT_FALSE(storage.has_linear_speed());
+    EXPECT_FALSE(storage.angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed().has_value());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
-    EXPECT_FLOAT_EQ(0, storage.linear_acceleration());
+    EXPECT_FALSE(storage.linear_acceleration().has_value());
     EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().value());
-    EXPECT_FLOAT_EQ(0, storage.robot_azimuth().value());
+    EXPECT_FALSE(storage.robot_azimuth().has_value());
     EXPECT_FLOAT_EQ(0, storage.robot_imu_twist().value());
     EXPECT_FLOAT_EQ(0, storage.robot_length().value());
 }
@@ -58,14 +58,14 @@ TEST(storage, got_robot_pos_first)
     EXPECT_FALSE(storage.waypoint_related_pos().has_value());
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_gps().value());
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_related().value());
-    EXPECT_FLOAT_EQ(0, storage.angular_speed());
-    EXPECT_FALSE(storage.has_angular_speed());
-    EXPECT_FLOAT_EQ(0, storage.linear_speed());
-    EXPECT_FALSE(storage.has_linear_speed());
+    EXPECT_FALSE(storage.angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed().has_value());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
-    EXPECT_FLOAT_EQ(0, storage.linear_acceleration());
+    EXPECT_FALSE(storage.linear_acceleration().has_value());
     EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().value());
-    EXPECT_FLOAT_EQ(1.5707964, storage.robot_azimuth().value());
+    EXPECT_FALSE(storage.robot_azimuth().has_value());
     EXPECT_FLOAT_EQ(1.5707964, storage.robot_imu_twist().value());
     EXPECT_FLOAT_EQ(1.5, storage.robot_length().value());
 
@@ -107,14 +107,14 @@ TEST(storage, got_robot_pos_first)
     }
     EXPECT_FLOAT_EQ(8.2420483, storage.distance_to_waypoint_gps().value());
     EXPECT_FLOAT_EQ(8.3322735, storage.distance_to_waypoint_related().value());
-    EXPECT_FLOAT_EQ(0, storage.angular_speed());
-    EXPECT_FALSE(storage.has_angular_speed());
-    EXPECT_FLOAT_EQ(0, storage.linear_speed());
-    EXPECT_FALSE(storage.has_linear_speed());
+    EXPECT_FALSE(storage.angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed().has_value());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
-    EXPECT_FLOAT_EQ(0, storage.linear_acceleration());
-    EXPECT_FLOAT_EQ(-3.1415923, storage.angle_to_waypoint().value()); // 0 due the storage didn't received imu
-    EXPECT_FLOAT_EQ(1.5707964, storage.robot_azimuth().value());
+    EXPECT_FALSE(storage.linear_acceleration().has_value());
+    EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().value()); // 0 due the storage didn't received imu
+    EXPECT_FALSE(storage.robot_azimuth().has_value()); // TODO check azimuth in tests
     EXPECT_FLOAT_EQ(1.5707964, storage.robot_imu_twist().value());
     EXPECT_FLOAT_EQ(1.5, storage.robot_length().value());
 
@@ -160,14 +160,14 @@ TEST(storage, got_waypoint_pos_first)
     EXPECT_FALSE(storage.waypoint_related_pos().has_value());
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_gps().value());
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_related().value());
-    EXPECT_FLOAT_EQ(0, storage.angular_speed());
-    EXPECT_FALSE(storage.has_angular_speed());
-    EXPECT_FLOAT_EQ(0, storage.linear_speed());
-    EXPECT_FALSE(storage.has_linear_speed());
+    EXPECT_FALSE(storage.angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed().has_value());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
-    EXPECT_FLOAT_EQ(0, storage.linear_acceleration());
+    EXPECT_FALSE(storage.linear_acceleration().has_value());
     EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().value());
-    EXPECT_FLOAT_EQ(1.5707964, storage.robot_azimuth().value());
+    EXPECT_FALSE(storage.robot_azimuth().has_value());
     EXPECT_FLOAT_EQ(1.5707964, storage.robot_imu_twist().value());
     EXPECT_FLOAT_EQ(1.5, storage.robot_length().value());
 
@@ -209,14 +209,14 @@ TEST(storage, got_waypoint_pos_first)
     }
     EXPECT_FLOAT_EQ(8.2420483, storage.distance_to_waypoint_gps().value());
     EXPECT_FLOAT_EQ(8.3322735, storage.distance_to_waypoint_related().value());
-    EXPECT_FLOAT_EQ(0, storage.angular_speed());
-    EXPECT_FALSE(storage.has_angular_speed());
-    EXPECT_FLOAT_EQ(0, storage.linear_speed());
-    EXPECT_FALSE(storage.has_linear_speed());
+    EXPECT_FALSE(storage.angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed().has_value());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
-    EXPECT_FLOAT_EQ(0, storage.linear_acceleration());
+    EXPECT_FALSE(storage.linear_acceleration().has_value());
     EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().value()); // 0 due the storage didn't received imu
-    EXPECT_FLOAT_EQ(1.5707964, storage.robot_azimuth().value());
+    EXPECT_FALSE(storage.robot_azimuth().has_value());
     EXPECT_FLOAT_EQ(1.5707964, storage.robot_imu_twist().value());
     EXPECT_FLOAT_EQ(1.5, storage.robot_length().value());
 
@@ -238,10 +238,10 @@ TEST(storage, angular_linear_speed)
 {
     Storage storage;
 
-    EXPECT_FLOAT_EQ(0, storage.angular_speed());
-    EXPECT_FALSE(storage.has_angular_speed());
-    EXPECT_FLOAT_EQ(0, storage.linear_speed());
-    EXPECT_FALSE(storage.has_linear_speed());
+    EXPECT_FALSE(storage.angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed().has_value());
 
     // got odometry
     {
@@ -252,10 +252,10 @@ TEST(storage, angular_linear_speed)
         storage.set_odometry(msg);
     }
 
-    EXPECT_FLOAT_EQ(5, storage.angular_speed());
-    EXPECT_TRUE(storage.has_angular_speed());
-    EXPECT_FLOAT_EQ(7, storage.linear_speed());
-    EXPECT_TRUE(storage.has_linear_speed());
+    EXPECT_FLOAT_EQ(5, storage.angular_speed().value());
+    EXPECT_TRUE(storage.has_angular_speed().value());
+    EXPECT_FLOAT_EQ(7, storage.linear_speed().value());
+    EXPECT_TRUE(storage.has_linear_speed().value());
 }
 
 TEST(storage, angular_linear_acceleration)
@@ -263,7 +263,7 @@ TEST(storage, angular_linear_acceleration)
     Storage storage;
 
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
-    EXPECT_FLOAT_EQ(0, storage.linear_acceleration());
+    EXPECT_FALSE(storage.linear_acceleration().has_value());
 
     // set linear acceleration 
     {
@@ -289,6 +289,6 @@ TEST(storage, angular_linear_acceleration)
         storage.set_odometry(msg);
     }
 
-    EXPECT_FLOAT_EQ(10, storage.linear_acceleration());
+    EXPECT_FLOAT_EQ(10, storage.linear_acceleration().value());
     EXPECT_FLOAT_EQ(5, storage.angular_acceleration());
 }

@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch_ros.actions import Node
+from launch_ros.actions import Node, LifecycleNode
 from launch.actions import ExecuteProcess
 
 # Retrieving path information
@@ -12,9 +12,12 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import SetEnvironmentVariable
 
 # React on event
-from launch.actions import RegisterEventHandler, EmitEvent
+from launch.actions import RegisterEventHandler, EmitEvent, TimerAction
 from launch.event_handlers import OnProcessExit
-from launch.events import Shutdown
+from launch.events import Shutdown, matches_action
+from launch_ros.event_handlers import OnStateTransition
+from lifecycle_msgs.msg import State, Transition
+import launch_ros
 
 # Path Variables
 ignition_ros_package_path = get_package_share_directory("ros_ign_gazebo")
@@ -24,10 +27,57 @@ simulation_world_file_path = Path(
 )
 simulation_models_file_path = Path(wheeled_model_enhanced_path, "models")
 
+
 # TODO integration_test node must run strictly after server node and bridges were initialized
 def generate_launch_description():
     simulation = ExecuteProcess(
         cmd=["ign", "gazebo", "-r", simulation_world_file_path], output="screen"
+    )
+
+    lifecycle_server = LifecycleNode(
+        package="wheeled_model_enhanced",
+        executable="reach_goal_action_server",
+        name="reach_goal_action_server_node",
+        namespace="",
+        parameters=[
+            {"angle_threshold": 0.05},
+            {"distance_threshold": 1.0},
+            {"max_angle_acceleration": 2.0},
+            {"max_angle_velocity": 1.0},
+            {"robot_imu_twist": 1.5707963267948966},  # in rads
+            {"max_acceleration": 1.0},
+            {"max_velocity": 10.0},
+            {"robot_length_in_m": 1.5},
+        ],
+    )
+
+    # Configure the laserscan_detector node after initialization
+    lifecycle_server_configure = EmitEvent(
+        event=launch_ros.events.lifecycle.ChangeState(
+            lifecycle_node_matcher=matches_action(lifecycle_server),
+            transition_id=Transition.TRANSITION_CONFIGURE,
+        )
+    )
+
+    # 3. Event handler to request 'activate' transition when the 'configure' transition succeeds
+    lifecycle_server_activate = RegisterEventHandler(
+        launch_ros.event_handlers.OnStateTransition(
+            target_lifecycle_node=lifecycle_server,
+            goal_state="inactive",
+            entities=[
+                TimerAction(
+                    period=5.0,
+                    actions=[
+                        EmitEvent(
+                            event=launch_ros.events.lifecycle.ChangeState(
+                                lifecycle_node_matcher=matches_action(lifecycle_server),
+                                transition_id=Transition.TRANSITION_ACTIVATE,
+                            )
+                        ),
+                    ],
+                )
+            ],
+        )
     )
 
     integration_test = Node(
@@ -62,22 +112,17 @@ def generate_launch_description():
                 ],
                 output="screen",
             ),
-            Node(
-                package="wheeled_model_enhanced",
-                executable="reach_goal_action_server",
-                name="reach_goal_action_server_node",
-                parameters=[
-                    {"angle_threshold": 0.05},
-                    {"distance_threshold": 1.0},
-                    {"max_angle_acceleration": 2.0},
-                    {"max_angle_velocity": 1.0},
-                    {"robot_imu_twist": 1.5707963267948966},  # in rads
-                    {"max_acceleration": 1.0},
-                    {"max_velocity": 10.0},
-                    {"robot_length_in_m": 1.5},
-                ],
+            lifecycle_server,
+            lifecycle_server_configure,
+            lifecycle_server_activate,
+            # TODO handler down here crashing bridge and console - need to figure out
+            RegisterEventHandler(
+                OnStateTransition(
+                    target_lifecycle_node=lifecycle_server,
+                    goal_state="active",
+                    entities=[integration_test]
+                )
             ),
-            integration_test,
             # Actually doesnt work. There are three copies of Node above that are created, and OnProcessExit kills only one of them
             # Btw if stop the simulation by Ctrl+C, all three copies will stop gracefully
             # Reference to issue: https://github.com/fastrack0770/ros2-educating/issues/1

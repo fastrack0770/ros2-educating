@@ -14,6 +14,8 @@ find_package(action_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(ros_ign_gazebo REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 
 # Generate custom interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -49,7 +51,8 @@ src/storage.cpp
 add_executable(reach_goal_action_server
   ${HEADERS} ${SOURCES} src/reach_goal_action_server.cpp
 )
-ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs nav_msgs)
+ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs nav_msgs "lifecycle_msgs"
+  "rclcpp_lifecycle")
 target_include_directories(reach_goal_action_server PUBLIC include)
 target_link_libraries(reach_goal_action_server "${cpp_typesupport_target}")
 

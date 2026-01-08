@@ -12,6 +12,7 @@ class Degree;
 class Radian
 {
   public:
+    constexpr Radian() : _value(0) {}
     constexpr Radian(double value) : _value(value)
     {
     }
