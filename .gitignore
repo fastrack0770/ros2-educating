@@ -6,3 +6,4 @@ install/
 
 build*
 /debug
+integration_test.xml

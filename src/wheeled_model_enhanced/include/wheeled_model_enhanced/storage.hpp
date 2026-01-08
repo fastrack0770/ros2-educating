@@ -40,18 +40,18 @@ class Storage
     void set_imu(const sensor_msgs::msg::Imu &imu);
     void set_odometry(const nav_msgs::msg::Odometry &new_data);
 
-    double angular_speed() const noexcept;
-    bool has_angular_speed() const noexcept;
+    Optional<double> angular_speed() const noexcept;
+    Optional<bool> has_angular_speed() const noexcept;
 
-    double linear_speed() const noexcept;
-    bool has_linear_speed() const noexcept;
+    Optional<double> linear_speed() const noexcept;
+    Optional<bool> has_linear_speed() const noexcept;
 
     /**
      * angular_acceleration
      * this value is used only for a reference due to an acceleration is not a constant
      */
     double angular_acceleration() const noexcept;
-    double linear_acceleration() const noexcept;
+    Optional<double> linear_acceleration() const noexcept;
 
     Radian angle_to_waypoint() const noexcept;
 
@@ -59,13 +59,19 @@ class Storage
      * robot_azimuth
      * Difference between the North and where the robot is facing
      */
-    Radian robot_azimuth() const noexcept;
+    Optional<Radian> robot_azimuth() const noexcept;
 
     void set_robot_imu_twist(Radian twist);
     Radian robot_imu_twist() const noexcept;
 
     void set_robot_length(Meter length);
     Meter robot_length() const noexcept;
+
+    /**
+     * initialized
+     * Return "true" when all data needed are provided
+     */
+    bool initialized() const noexcept;
 
   private:
     void calculate_waypoint_coords();
@@ -80,13 +86,13 @@ class Storage
     PosExtended _robot_pos;
     PosExtended _waypoint_pos;
 
-    sensor_msgs::msg::Imu _imu;
-    Radian _angle_to_waypoint = 0.f;
+    Optional<sensor_msgs::msg::Imu> _imu;
+    Radian _angle_to_waypoint {0.f};
 
-    Radian _robot_imu_twist = 0;
+    Radian _robot_imu_twist {0};
     Meter _robot_length = 0;
 
-    nav_msgs::msg::Odometry _odometry;
+    Optional<nav_msgs::msg::Odometry> _odometry;
 
     double _robot_angular_acceleration = 0.f;
     double _robot_linear_speed = 0.f;

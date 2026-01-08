@@ -17,7 +17,13 @@
   <depend>nav_msgs</depend>
 
   <build_depend>rosidl_default_generators</build_depend>
+  <build_depend>lifecycle_msgs</build_depend>
+  <build_depend>rclcpp_lifecycle</build_depend>
+
   <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>rclcpp_lifecycle</exec_depend>
+  <exec_depend>lifecycle_msgs</exec_depend>
+  
   <member_of_group>rosidl_interface_packages</member_of_group>
 
   <test_depend>ament_lint_auto</test_depend>

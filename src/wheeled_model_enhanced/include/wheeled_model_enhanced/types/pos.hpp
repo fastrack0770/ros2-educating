@@ -66,8 +66,8 @@ class Pos
 
     Pos &operator=(const sensor_msgs::msg::NavSatFix &msg)
     {
-        _latitude = Degree(msg.latitude);
-        _longitude = Degree(msg.longitude);
+        _latitude = Radian(Degree(msg.latitude));
+        _longitude = Radian(Degree(msg.longitude));
         _altitude = msg.altitude;
         return *this;
     }
@@ -88,7 +88,7 @@ class Pos
     }
 
   private:
-    Radian _latitude = 0.f;
-    Radian _longitude = 0.f;
-    Meter _altitude = 0.f;
+    Radian _latitude {0.f};
+    Radian _longitude {0.f};
+    Meter _altitude {0.f};
 };

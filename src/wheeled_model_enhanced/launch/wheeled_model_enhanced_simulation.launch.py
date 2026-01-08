@@ -38,7 +38,7 @@ def generate_launch_description():
             ),
             simulation,
             Node(
-                package="ros_ign_bridge",
+                package="ros_gz_bridge",
                 executable="parameter_bridge",
                 arguments=[
                     "/model/wheeled_model_enhanced/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist",
