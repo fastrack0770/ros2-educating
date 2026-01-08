@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuites tests="2" failures="0" disabled="0" errors="0" time="17.534359" timestamp="2026-01-08T09:39:23" name="IntegrationTests">
-  <testsuite name="integration test" tests="2" failures="0" disabled="0" errors="0" time="17.534359" timestamp="2026-01-08T09:39:23">
-    <testcase name="Goal (-0.401193; -0.754026)" status="run" result="completed" time="0.000031" timestamp="2026-01-08T09:39:23" classname="integration_test" />
-    <testcase name="Goal (-0.401192; -0.754024)" status="run" result="completed" time="17.534328" timestamp="2026-01-08T09:39:23" classname="integration_test" />
-  </testsuite>
-</testsuites>
