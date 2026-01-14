@@ -179,7 +179,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
         const auto handle_goal =
             [this](const rclcpp_action::GoalUUID &,
                    std::shared_ptr<const ReachGoalAction::Goal> goal) -> rclcpp_action::GoalResponse {
-            if (LifecycleNode::get_current_state().label() != "active")
+            if (is_active())
             {
                 RCLCPP_ERROR_STREAM(get_logger(),
                                     "Reject goal due the server is not in activate state, current state is - "
@@ -425,6 +425,11 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
         RCUTILS_LOG_INFO_NAMED(get_name(), "on shutdown is called from state %s.", state.label().c_str());
 
         return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+    }
+
+    bool is_active()
+    {
+        return LifecycleNode::get_current_state().label() != "active";
     }
 
   private:
