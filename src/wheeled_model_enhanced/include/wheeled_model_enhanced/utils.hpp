@@ -107,8 +107,8 @@ inline Meter distance(const Pos &lhv, const Pos &rhv)
  */
 inline Meter distance(const Cartesian &lhv, const Cartesian &rhv)
 {
-    return Meter(
-        sqrt(pow((lhv.x - rhv.x).to_double(), 2) + pow((lhv.y - rhv.y).to_double(), 2) + pow((lhv.z - rhv.z).to_double(), 2)));
+    return Meter(sqrt(pow((lhv.x - rhv.x).to_double(), 2) + pow((lhv.y - rhv.y).to_double(), 2) +
+                      pow((lhv.z - rhv.z).to_double(), 2)));
 }
 
 /**
@@ -217,7 +217,8 @@ inline double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector
  * get_angle_to_waypoint_signed
  * Get angle, which to rotate to robot will face waypoint. The angle is positive when waypoint to the right of the robot
  */
-inline Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const Radian &robot_azimuth)
+inline Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint,
+                                           const Radian &robot_azimuth)
 {
     const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
     const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
@@ -259,12 +260,19 @@ template <typename T> inline int sign(T val)
     return (T(0) < val) - (val < T(0));
 }
 
+/**
+ * get_speed
+ * This function returns what speed must be set and the acceleration distance, that will be if the robot
+ * want to move desired_distance with setted max_speed and acceleration
+ */
 namespace
 {
 using SpeedToSet = double;
 using AccelerationDistance = double;
+using AccelerationTime = double;
 } // namespace
-inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, double acceleration, double desired_distance)
+inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, double acceleration,
+                                                              double desired_distance)
 {
     double velocity_to_set = 0.f;
     double s_ac = pow(max_speed, 2) / (2 * acceleration); // distance, after which the velocity will become maximum
@@ -279,6 +287,26 @@ inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, 
     }
 
     return {velocity_to_set, s_ac};
+}
+
+inline std::tuple<SpeedToSet, AccelerationDistance, AccelerationTime> get_speed(Radian max_speed, Radian acceleration,
+                                                                                Radian desired_distance)
+{
+    double velocity_to_set = 0.f;
+    const auto half_dist = desired_distance / 2;
+    const auto half_dist_velocity = sqrt(2 * acceleration.to_double() * half_dist.to_double());
+    if (half_dist_velocity > max_speed.to_double())
+    {
+        velocity_to_set = max_speed.to_double();
+    }
+    else
+    {
+        velocity_to_set = half_dist_velocity;
+    }
+
+    const auto s_ac = pow(velocity_to_set, 2) / (2 * acceleration.to_double());
+    const auto t_ac = velocity_to_set / acceleration.to_double();
+    return {velocity_to_set * utils::sign(desired_distance), s_ac, t_ac};
 }
 
 } // end of namespace utils

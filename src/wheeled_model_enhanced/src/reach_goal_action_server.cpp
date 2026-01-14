@@ -82,13 +82,13 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
                 try
                 {
                     RCLCPP_DEBUG_STREAM(get_logger(), std::setprecision(8)
-                                                         << "ROBOT gps: " << _storage.robot_gps_pos()
-                                                         << ", topoc: " << _storage.robot_topo_pos()
-                                                         << ", related: " << _storage.robot_related_pos());
+                                                          << "ROBOT gps: " << _storage.robot_gps_pos()
+                                                          << ", topoc: " << _storage.robot_topo_pos()
+                                                          << ", related: " << _storage.robot_related_pos());
                     RCLCPP_DEBUG_STREAM(get_logger(), std::setprecision(8)
-                                                         << "distance gps: " << _storage.distance_to_waypoint_gps()
-                                                         << ", related: " << _storage.distance_to_waypoint_related()
-                                                         << ", angle to wp (rad): " << _storage.angle_to_waypoint());
+                                                          << "distance gps: " << _storage.distance_to_waypoint_gps()
+                                                          << ", related: " << _storage.distance_to_waypoint_related()
+                                                          << ", angle to wp (rad): " << _storage.angle_to_waypoint());
                 }
                 catch (const std::exception &e)
                 {
@@ -108,8 +108,8 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
                 try
                 {
                     RCLCPP_DEBUG_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
-                                                "robot azimuth: " << _storage.robot_azimuth() << ", angle to waypoint "
-                                                                  << _storage.angle_to_waypoint());
+                                                 "robot azimuth: " << _storage.robot_azimuth() << ", angle to waypoint "
+                                                                   << _storage.angle_to_waypoint());
                 }
                 catch (const std::exception &e)
                 {
@@ -231,8 +231,8 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
                 std::thread control_thread;
                 // turn towards the waypoint
                 {
-                    const auto a_max = get_parameter(params::max_angle_acceleration).as_double(); // rad/sec^2
-                    const auto v_max = get_parameter(params::max_angle_velocity).as_double();     // rad/sec
+                    const auto a_max = Radian(get_parameter(params::max_angle_acceleration).as_double()); // rad/sec^2
+                    const auto v_max = Radian(get_parameter(params::max_angle_velocity).as_double());     // rad/sec
 
                     if (not _is_running)
                     {
@@ -247,24 +247,29 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                             while (_is_running and not is_angle_reached())
                             {
-                                const auto angle_to_waypoint = _storage.angle_to_waypoint().to_double();
+                                const auto angle_to_waypoint = _storage.angle_to_waypoint();
 
-                                const auto [velocity_to_set, s_ac] = utils::get_speed(v_max, a_max, angle_to_waypoint);
+                                const auto [velocity_to_set, s_ac, t_ac] =
+                                    utils::get_speed(v_max, a_max, angle_to_waypoint);
 
                                 RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity "
-                                                                            << velocity_to_set << ", north angle "
+                                                                            << velocity_to_set << " , s_ac " << s_ac
+                                                                            << ", t_ac " << t_ac << ", north angle "
                                                                             << _storage.robot_azimuth());
 
                                 set_robot_angle_speed(velocity_to_set);
 
-                                while (_is_running and abs(_storage.angle_to_waypoint().to_double()) > s_ac)
+                                const auto start_point = rclcpp::Clock().now();
+
+                                // TODO here must be noticed contour delay
+                                while (_is_running and (rclcpp::Clock().now() - start_point).seconds() < t_ac)
                                 {
                                     loop_rate.sleep();
                                 }
 
                                 set_robot_angle_speed(0);
 
-                                while (_is_running and _storage.has_angular_speed().value())
+                                while (_is_running and _storage.has_angular_speed())
                                 {
                                     loop_rate.sleep();
                                 }
@@ -332,7 +337,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                                 set_robot_speed(0);
 
-                                while (_is_running and _storage.has_linear_speed().value())
+                                while (_is_running and _storage.has_linear_speed())
                                 {
                                     loop_rate.sleep();
                                 }
@@ -442,8 +447,9 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
         geometry_msgs::msg::Twist msg_to_pub;
         msg_to_pub.angular.z = speed * (-1); // we assume that a positive speed is for turning clockwise
         _speed_pub->publish(msg_to_pub);
+        _speed_pub->publish(msg_to_pub);
+        _speed_pub->publish(msg_to_pub);
         RCLCPP_INFO_STREAM(get_logger(), "Set angle velocity to " << speed);
-        const auto start_point = rclcpp::Clock().now();
     }
 
     /**

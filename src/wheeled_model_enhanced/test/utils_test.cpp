@@ -189,8 +189,8 @@ TEST(utils, get_angle_between_vectors_signed)
     const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
     const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
 
-    auto rn_wr_angle = get_angle_between_vectors_signed(rn_vec, wr_vec);
-    EXPECT_FLOAT_EQ(45.691002, to_deg(rn_wr_angle));
+    EXPECT_FLOAT_EQ(45.691002, to_deg(get_angle_between_vectors_signed(rn_vec, wr_vec)));
+    EXPECT_FLOAT_EQ(-45.691002, to_deg(get_angle_between_vectors_signed(wr_vec, rn_vec)));
 }
 
 TEST(utils, get_speed)
@@ -209,5 +209,16 @@ TEST(utils, get_speed)
         const auto [velocity_to_set, s_ac] = utils::get_speed(1, 2, -2.70037);
         EXPECT_FLOAT_EQ(-1, velocity_to_set);
         EXPECT_FLOAT_EQ(0.25, s_ac);
+    }
+    {
+        const auto [velocity_to_set, s_ac] = utils::get_speed(1, 2, -2.70037);
+        EXPECT_FLOAT_EQ(-1, velocity_to_set);
+        EXPECT_FLOAT_EQ(0.25, s_ac);
+    }
+    {
+        const auto [velocity_to_set, s_ac, t_ac] = utils::get_speed(Radian(10), Radian(10), Radian(3.14021));
+        EXPECT_FLOAT_EQ(5.6037579, velocity_to_set);
+        EXPECT_FLOAT_EQ(1.570105, s_ac);
+        EXPECT_FLOAT_EQ(0.56037575, t_ac);
     }
 }
