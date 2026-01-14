@@ -234,7 +234,7 @@ inline Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesi
         rn_wr_angle += 2 * M_PI;
     }
 
-    auto target_angle = Radian(robot_azimuth + Radian(rn_wr_angle)).normalize();
+    auto target_angle = Radian(robot_azimuth + rn_wr_angle).normalize();
 
     // finding the shortest way to turn
     if (target_angle < Degree(180))

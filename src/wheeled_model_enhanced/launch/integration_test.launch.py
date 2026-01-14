@@ -28,7 +28,6 @@ simulation_world_file_path = Path(
 simulation_models_file_path = Path(wheeled_model_enhanced_path, "models")
 
 
-# TODO integration_test node must run strictly after server node and bridges were initialized
 def generate_launch_description():
     simulation = ExecuteProcess(
         cmd=["ign", "gazebo", "-r", simulation_world_file_path], output="screen"
@@ -51,7 +50,6 @@ def generate_launch_description():
         ],
     )
 
-    # Configure the laserscan_detector node after initialization
     lifecycle_server_configure = EmitEvent(
         event=launch_ros.events.lifecycle.ChangeState(
             lifecycle_node_matcher=matches_action(lifecycle_server),
@@ -59,7 +57,6 @@ def generate_launch_description():
         )
     )
 
-    # 3. Event handler to request 'activate' transition when the 'configure' transition succeeds
     lifecycle_server_activate = RegisterEventHandler(
         launch_ros.event_handlers.OnStateTransition(
             target_lifecycle_node=lifecycle_server,
@@ -93,7 +90,7 @@ def generate_launch_description():
             ),
             simulation,
             Node(
-                package="ros_gz_bridge",
+                package="ros_ign_bridge",
                 executable="parameter_bridge",
                 arguments=[
                     "/model/wheeled_model_enhanced/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist",
@@ -115,7 +112,6 @@ def generate_launch_description():
             lifecycle_server,
             lifecycle_server_configure,
             lifecycle_server_activate,
-            # TODO handler down here crashing bridge and console - need to figure out
             RegisterEventHandler(
                 OnStateTransition(
                     target_lifecycle_node=lifecycle_server,
@@ -123,9 +119,6 @@ def generate_launch_description():
                     entities=[integration_test]
                 )
             ),
-            # Actually doesnt work. There are three copies of Node above that are created, and OnProcessExit kills only one of them
-            # Btw if stop the simulation by Ctrl+C, all three copies will stop gracefully
-            # Reference to issue: https://github.com/fastrack0770/ros2-educating/issues/1
             RegisterEventHandler(
                 event_handler=OnProcessExit(
                     target_action=integration_test,
