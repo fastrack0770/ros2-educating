@@ -117,14 +117,14 @@ class IntegrationTestNode : public rclcpp::Node
         };
 
         _goal_queue.push(create_goal(-0.40119337, -0.75402623)); // -2; 0
-        _goal_queue.push(create_goal(-0.4011918, -0.75402419));  // 10; 10
         _goal_queue.push(create_goal(-0.40119337, -0.75402419)); // 10; 0
-        _goal_queue.push(create_goal(-0.40119495, -0.75402419)); // 10; -10
+        _goal_queue.push(create_goal(-0.4011918, -0.75402419));  // 10; 10
         _goal_queue.push(create_goal(-0.40119495, -0.75402589)); // 0; -10
-        _goal_queue.push(create_goal(-0.40119495, -0.75402759)); // -10; -10
+        _goal_queue.push(create_goal(-0.40119495, -0.75402419)); // 10; -10
         _goal_queue.push(create_goal(-0.40119337, -0.75402759)); // -10; 0
-        _goal_queue.push(create_goal(-0.4011918, -0.75402759));  // -10; 10
+        _goal_queue.push(create_goal(-0.40119495, -0.75402759)); // -10; -10
         _goal_queue.push(create_goal(-0.4011918, -0.75402589));  // 0; 10
+        _goal_queue.push(create_goal(-0.4011918, -0.75402759));  // -10; 10
     }
 
     void prompt_user_for_goal()
