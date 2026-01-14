@@ -26,7 +26,7 @@ inline double to_rad(double value)
  */
 inline double abs(Vector3D vec)
 {
-    return std::sqrt(std::pow(vec.x.value(), 2) + std::pow(vec.y.value(), 2) + std::pow(vec.z.value(), 2));
+    return std::sqrt(std::pow(vec.x.to_double(), 2) + std::pow(vec.y.to_double(), 2) + std::pow(vec.z.to_double(), 2));
 }
 
 /**
@@ -57,10 +57,10 @@ inline double earth_radius_at(const Pos &pos)
     constexpr double WGS_ELLIPSOID_EQ = 6378137.0;    // equatorial, in meters
     constexpr double WGS_ELLIPSOID_POL = 6356752.314; // polar, in meters
 
-    const auto f1 = std::pow(std::pow(WGS_ELLIPSOID_EQ, 2) * std::cos(pos.latitude().value()), 2);
-    const auto f2 = std::pow(std::pow(WGS_ELLIPSOID_POL, 2) * std::sin(pos.latitude().value()), 2);
-    const auto f3 = std::pow(WGS_ELLIPSOID_EQ * std::cos(pos.latitude().value()), 2);
-    const auto f4 = std::pow(WGS_ELLIPSOID_POL * std::sin(pos.latitude().value()), 2);
+    const auto f1 = std::pow(std::pow(WGS_ELLIPSOID_EQ, 2) * std::cos(pos.latitude().to_double()), 2);
+    const auto f2 = std::pow(std::pow(WGS_ELLIPSOID_POL, 2) * std::sin(pos.latitude().to_double()), 2);
+    const auto f3 = std::pow(WGS_ELLIPSOID_EQ * std::cos(pos.latitude().to_double()), 2);
+    const auto f4 = std::pow(WGS_ELLIPSOID_POL * std::sin(pos.latitude().to_double()), 2);
 
     const auto radius = std::sqrt((f1 + f2) / (f3 + f4));
 
@@ -77,7 +77,7 @@ inline double earth_radius_at_2(const Pos &pos)
     constexpr double f = 1 / 298.257223563;
     constexpr double WGS_ELLIPSOID_EQ = 6378137.0; // equatorial, in meters
 
-    const auto radius = WGS_ELLIPSOID_EQ * (1 - f * std::pow(std::sin(pos.latitude().value()), 2));
+    const auto radius = WGS_ELLIPSOID_EQ * (1 - f * std::pow(std::sin(pos.latitude().to_double()), 2));
 
     return radius;
 }
@@ -89,9 +89,9 @@ inline double earth_radius_at_2(const Pos &pos)
  */
 inline Meter distance(const Pos &lhv, const Pos &rhv)
 {
-    const double a = std::pow(std::sin(std::abs(lhv.latitude().value() - rhv.latitude().value()) / 2), 2) +
-                     std::cos(lhv.latitude().value()) * std::cos(rhv.latitude().value()) *
-                         std::pow(std::sin(std::abs(lhv.longitude().value() - rhv.longitude().value()) / 2), 2);
+    const double a = std::pow(std::sin(std::abs(lhv.latitude().to_double() - rhv.latitude().to_double()) / 2), 2) +
+                     std::cos(lhv.latitude().to_double()) * std::cos(rhv.latitude().to_double()) *
+                         std::pow(std::sin(std::abs(lhv.longitude().to_double() - rhv.longitude().to_double()) / 2), 2);
     const double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
 
     const double earth_radius = earth_radius_at(lhv); // in meters
@@ -108,7 +108,7 @@ inline Meter distance(const Pos &lhv, const Pos &rhv)
 inline Meter distance(const Cartesian &lhv, const Cartesian &rhv)
 {
     return Meter(
-        sqrt(pow((lhv.x - rhv.x).value(), 2) + pow((lhv.y - rhv.y).value(), 2) + pow((lhv.z - rhv.z).value(), 2)));
+        sqrt(pow((lhv.x - rhv.x).to_double(), 2) + pow((lhv.y - rhv.y).to_double(), 2) + pow((lhv.z - rhv.z).to_double(), 2)));
 }
 
 /**
@@ -120,12 +120,12 @@ inline Meter distance(const Cartesian &lhv, const Cartesian &rhv)
 inline Cartesian get_topo(const Pos &point, const Pos &point_of_view)
 {
     // using wgs-84
-    const double B = point.latitude().value();            // latitude, rad
-    const double L = point.longitude().value();           // longitude, rad
-    const double H = Kilometer(point.altitude()).value(); // altitude, km
+    const double B = point.latitude().to_double();            // latitude, rad
+    const double L = point.longitude().to_double();           // longitude, rad
+    const double H = Kilometer(point.altitude()).to_double(); // altitude, km
 
-    const double B_view = point_of_view.latitude().value();  // latitude, rad
-    const double L_view = point_of_view.longitude().value(); // longitude, rad
+    const double B_view = point_of_view.latitude().to_double();  // latitude, rad
+    const double L_view = point_of_view.longitude().to_double(); // longitude, rad
 
     // geodesic to geocentric
     Cartesian geocentric;

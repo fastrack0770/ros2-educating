@@ -14,6 +14,8 @@ find_package(action_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(ros_ign_gazebo REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 
 # Generate custom interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -45,13 +47,16 @@ src/storage.cpp
 )
 
 # Actions
+# reach_goal_action_server
 add_executable(reach_goal_action_server
   ${HEADERS} ${SOURCES} src/reach_goal_action_server.cpp
 )
-ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs nav_msgs)
+ament_target_dependencies(reach_goal_action_server rclcpp action_msgs rclcpp_action sensor_msgs geometry_msgs nav_msgs "lifecycle_msgs"
+  "rclcpp_lifecycle")
 target_include_directories(reach_goal_action_server PUBLIC include)
 target_link_libraries(reach_goal_action_server "${cpp_typesupport_target}")
 
+# reach_goal_action_client
 add_executable(reach_goal_action_client
   include/wheeled_model_enhanced/types.hpp src/reach_goal_action_client.cpp
 )
@@ -59,10 +64,19 @@ ament_target_dependencies(reach_goal_action_client rclcpp action_msgs rclcpp_act
 target_include_directories(reach_goal_action_client PUBLIC include)
 target_link_libraries(reach_goal_action_client "${cpp_typesupport_target}")
 
+# integration_test
+add_executable(integration_test
+  include/wheeled_model_enhanced/types.hpp src/integration_test.cpp
+)
+ament_target_dependencies(integration_test rclcpp action_msgs rclcpp_action)
+target_include_directories(integration_test PUBLIC include)
+target_link_libraries(integration_test "${cpp_typesupport_target}")
+
 # Install
 install(TARGETS
   reach_goal_action_server
   reach_goal_action_client
+  integration_test
   DESTINATION lib/${PROJECT_NAME}
 )
 

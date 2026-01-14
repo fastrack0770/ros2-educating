@@ -87,8 +87,14 @@ void Storage::set_odometry(const nav_msgs::msg::Odometry &new_data)
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
-    const auto angular_velocity_diff = new_data.twist.twist.angular.z - _odometry.twist.twist.angular.z;
-    const auto passed_time = new_data.header.stamp - _odometry.header.stamp;
+    if (not _odometry.has_value())
+    {
+        _odometry = new_data;
+        return;
+    }
+
+    const auto angular_velocity_diff = new_data.twist.twist.angular.z - _odometry->twist.twist.angular.z;
+    const auto passed_time = new_data.header.stamp - _odometry->header.stamp;
 
     _odometry = new_data;
 
@@ -96,32 +102,54 @@ void Storage::set_odometry(const nav_msgs::msg::Odometry &new_data)
     _robot_angular_acceleration = angular_velocity_diff / passed_time;
 }
 
-double Storage::angular_speed() const noexcept
+Optional<double> Storage::angular_speed() const noexcept
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
-    return _odometry.twist.twist.angular.z;
+    if (not _odometry.has_value())
+    {
+        return Nullopt;
+    }
+
+    return _odometry->twist.twist.angular.z;
 }
 
-bool Storage::has_angular_speed() const noexcept
+Optional<bool> Storage::has_angular_speed() const noexcept
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
-    return abs(angular_speed()) > 0;
+    const auto ang_speed = angular_speed();
+    if (not ang_speed.has_value())
+    {
+        return Nullopt;
+    }
+
+    return abs(ang_speed.value()) > 0;
 }
 
-double Storage::linear_speed() const noexcept
+Optional<double> Storage::linear_speed() const noexcept
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
-    return _odometry.twist.twist.linear.x;
+    if (not _odometry.has_value())
+    {
+        return Nullopt;
+    }
+
+    return _odometry->twist.twist.linear.x;
 }
 
-bool Storage::has_linear_speed() const noexcept
+Optional<bool> Storage::has_linear_speed() const noexcept
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
-    return abs(linear_speed()) > 0;
+    const auto lin_speed = linear_speed();
+    if (not lin_speed.has_value())
+    {
+        return Nullopt;
+    }
+
+    return abs(lin_speed.value()) > 0;
 }
 
 /**
@@ -135,11 +163,16 @@ double Storage::angular_acceleration() const noexcept
     return _robot_angular_acceleration;
 }
 
-double Storage::linear_acceleration() const noexcept
+Optional<double> Storage::linear_acceleration() const noexcept
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
-    return _imu.linear_acceleration.x;
+    if (not _imu.has_value())
+    {
+        return Nullopt;
+    }
+
+    return _imu->linear_acceleration.x;
 }
 
 Radian Storage::angle_to_waypoint() const noexcept
@@ -160,11 +193,16 @@ Meter Storage::distance_to_waypoint_related() const noexcept
  * robot_azimuth
  * Difference between the North and where the robot is facing
  */
-Radian Storage::robot_azimuth() const noexcept
+Optional<Radian> Storage::robot_azimuth() const noexcept
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
-    return Radian(utils::get_euler_z_angle(_imu) + _robot_imu_twist.value());
+    if (not _imu.has_value())
+    {
+        return Nullopt;
+    }
+
+    return Radian(utils::get_euler_z_angle(_imu.value()) + _robot_imu_twist.to_double());
 }
 
 void Storage::set_robot_imu_twist(Radian twist)
@@ -226,9 +264,16 @@ void Storage::calculate_distances()
 
 void Storage::calculate_waypoint_angle()
 {
-    if (_waypoint_pos.related_pos.has_value() and _robot_pos.related_pos.has_value())
+    const auto robot_az = robot_azimuth();
+    if (_waypoint_pos.related_pos.has_value() and _robot_pos.related_pos.has_value() and robot_az.has_value())
     {
         _angle_to_waypoint = utils::get_angle_to_waypoint_signed(_robot_pos.related_pos.value(),
-                                                                 _waypoint_pos.related_pos.value(), robot_azimuth());
+                                                                 _waypoint_pos.related_pos.value(), robot_az.value());
     }
+}
+
+bool Storage::initialized() const noexcept
+{
+    return _robot_pos.gps_pos.has_value() and _robot_pos.related_pos.has_value() and _robot_pos.topo_pos.has_value() and
+           _imu.has_value() and _odometry.has_value();
 }

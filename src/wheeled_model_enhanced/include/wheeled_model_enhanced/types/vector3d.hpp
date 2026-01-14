@@ -7,7 +7,7 @@ using Vector3D = Cartesian;
 // dot product of vectors
 inline double operator*(const Vector3D &lhv, const Vector3D &rhv)
 {
-    return (lhv.x * rhv.x + lhv.y * rhv.y + lhv.z * rhv.z).value();
+    return (lhv.x * rhv.x + lhv.y * rhv.y + lhv.z * rhv.z).to_double();
 }
 
 // cross product of vectors

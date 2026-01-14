@@ -1,5 +1,8 @@
 #include <iomanip>
 
+#include "lifecycle_msgs/msg/transition.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -44,11 +47,20 @@ constexpr const char *robot_length_in_m = "robot_length_in_m";
 constexpr const double robot_length_in_m_default = 1.5;
 } // end of namespace params
 
-class ReachGoalActionServerNode : public rclcpp::Node
+class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 {
   public:
-    ReachGoalActionServerNode() : Node("reach_goal_action_server_node")
+    explicit ReachGoalActionServerNode(bool intra_process_comms = false)
+        : rclcpp_lifecycle::LifecycleNode("reach_goal_action_server_node",
+                                          rclcpp::NodeOptions().use_intra_process_comms(intra_process_comms))
     {
+    }
+
+    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_configure(
+        const rclcpp_lifecycle::State &)
+    {
+        RCLCPP_INFO(get_logger(), "on_configure() is called.");
+
         // parameters
         declare_parameter<double>(params::angle_threshold, params::angle_threshold_default);
         declare_parameter<double>(params::distance_threshold, params::distance_threshold_default);
@@ -69,11 +81,11 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                 try
                 {
-                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
+                    RCLCPP_DEBUG_STREAM(get_logger(), std::setprecision(8)
                                                          << "ROBOT gps: " << _storage.robot_gps_pos()
                                                          << ", topoc: " << _storage.robot_topo_pos()
                                                          << ", related: " << _storage.robot_related_pos());
-                    RCLCPP_INFO_STREAM(get_logger(), std::setprecision(8)
+                    RCLCPP_DEBUG_STREAM(get_logger(), std::setprecision(8)
                                                          << "distance gps: " << _storage.distance_to_waypoint_gps()
                                                          << ", related: " << _storage.distance_to_waypoint_related()
                                                          << ", angle to wp (rad): " << _storage.angle_to_waypoint());
@@ -95,7 +107,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                 try
                 {
-                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
+                    RCLCPP_DEBUG_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
                                                 "robot azimuth: " << _storage.robot_azimuth() << ", angle to waypoint "
                                                                   << _storage.angle_to_waypoint());
                 }
@@ -143,7 +155,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
             const auto callback = [this](const sensor_msgs::msg::LaserScan &) {
                 try
                 {
-                    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000, "got lidar info");
+                    RCLCPP_DEBUG_STREAM_THROTTLE(get_logger(), *get_clock(), 1000, "got lidar info");
                 }
                 catch (const std::exception &e)
                 {
@@ -155,9 +167,26 @@ class ReachGoalActionServerNode : public rclcpp::Node
             _lidar_sub = create_subscription<sensor_msgs::msg::LaserScan>("/lidar", 10, callback);
         }
 
+        return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+    }
+
+    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_activate(
+        const rclcpp_lifecycle::State &state)
+    {
+        LifecycleNode::on_activate(state);
+        RCUTILS_LOG_INFO_NAMED(get_name(), "on_activate() is called.");
+
         const auto handle_goal =
             [this](const rclcpp_action::GoalUUID &,
                    std::shared_ptr<const ReachGoalAction::Goal> goal) -> rclcpp_action::GoalResponse {
+            if (is_active())
+            {
+                RCLCPP_ERROR_STREAM(get_logger(),
+                                    "Reject goal due the server is not in activate state, current state is - "
+                                        << LifecycleNode::get_current_state().label());
+
+                return rclcpp_action::GoalResponse::REJECT;
+            }
             if (_is_running)
             {
                 RCLCPP_ERROR_STREAM(get_logger(), "Reject goal due the goal already is");
@@ -195,7 +224,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                 rclcpp::Rate loop_rate(1);
 
-                feedback->distance_to_point = _storage.distance_to_waypoint_gps().value();
+                feedback->distance_to_point = _storage.distance_to_waypoint_gps().to_double();
 
                 const auto start_point = rclcpp::Clock().now();
 
@@ -218,7 +247,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                             while (_is_running and not is_angle_reached())
                             {
-                                const auto angle_to_waypoint = _storage.angle_to_waypoint().value();
+                                const auto angle_to_waypoint = _storage.angle_to_waypoint().to_double();
 
                                 const auto [velocity_to_set, s_ac] = utils::get_speed(v_max, a_max, angle_to_waypoint);
 
@@ -228,14 +257,14 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                                 set_robot_angle_speed(velocity_to_set);
 
-                                while (_is_running and abs(_storage.angle_to_waypoint().value()) > s_ac)
+                                while (_is_running and abs(_storage.angle_to_waypoint().to_double()) > s_ac)
                                 {
                                     loop_rate.sleep();
                                 }
 
                                 set_robot_angle_speed(0);
 
-                                while (_is_running and _storage.has_angular_speed())
+                                while (_is_running and _storage.has_angular_speed().value())
                                 {
                                     loop_rate.sleep();
                                 }
@@ -249,7 +278,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                     while (_is_running and not is_angle_reached())
                     {
-                        feedback->distance_to_point = _storage.distance_to_waypoint_gps().value();
+                        feedback->distance_to_point = _storage.distance_to_waypoint_gps().to_double();
 
                         goal_handle->publish_feedback(feedback);
                         loop_rate.sleep();
@@ -285,7 +314,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                             while (_is_running and not is_goal_reached())
                             {
-                                const auto distance_to_waypoint = _storage.distance_to_waypoint_related().value();
+                                const auto distance_to_waypoint = _storage.distance_to_waypoint_related().to_double();
 
                                 const auto [velocity_to_set, s_ac] =
                                     utils::get_speed(v_max, a_max, distance_to_waypoint);
@@ -303,7 +332,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                                 set_robot_speed(0);
 
-                                while (_is_running and _storage.has_linear_speed())
+                                while (_is_running and _storage.has_linear_speed().value())
                                 {
                                     loop_rate.sleep();
                                 }
@@ -317,7 +346,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
                     while (_is_running and not is_goal_reached())
                     {
-                        feedback->distance_to_point = _storage.distance_to_waypoint_related().value();
+                        feedback->distance_to_point = _storage.distance_to_waypoint_related().to_double();
 
                         goal_handle->publish_feedback(feedback);
                         loop_rate.sleep();
@@ -345,12 +374,65 @@ class ReachGoalActionServerNode : public rclcpp::Node
 
             thread.detach();
         };
-        _action_server = rclcpp_action::create_server<ReachGoalAction>(this, "reach_goal", handle_goal, handle_cancel,
-                                                                       handle_accepted);
 
-        RCLCPP_INFO_STREAM(get_logger(), "Reach goal action server is running");
+        // waiting for server to be initialized with initial data
+        if (_storage.initialized())
+        {
+            _action_server = rclcpp_action::create_server<ReachGoalAction>(this, "reach_goal", handle_goal,
+                                                                           handle_cancel, handle_accepted);
+
+            RCLCPP_INFO_STREAM(get_logger(), "Reach goal action server is running");
+
+            return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+        }
+
+        RCLCPP_ERROR_STREAM(get_logger(), "Reach goal action server didn't initialized, aborting activation");
+
+        return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
     }
 
+    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_deactivate(
+        const rclcpp_lifecycle::State &state)
+    {
+        LifecycleNode::on_deactivate(state);
+
+        RCUTILS_LOG_INFO_NAMED(get_name(), "on_deactivate() is called.");
+
+        _is_running = false;
+
+        _action_server.reset();
+
+        _robot_navsat_sub.reset();
+        _imu_sub.reset();
+        _speed_pub.reset();
+        _odometry_sub.reset();
+        _lidar_sub.reset();
+
+        return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+    }
+
+    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_cleanup(
+        const rclcpp_lifecycle::State &)
+    {
+        RCUTILS_LOG_INFO_NAMED(get_name(), "on cleanup is called.");
+
+        return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+    }
+
+    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_shutdown(
+        const rclcpp_lifecycle::State &state)
+    {
+        RCUTILS_LOG_INFO_NAMED(get_name(), "on shutdown is called from state %s.", state.label().c_str());
+
+        return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+    }
+
+    bool is_active()
+    {
+        return LifecycleNode::get_current_state().label() != "active";
+    }
+
+  private:
     /**
      * set_robot_angle_speed
      * args - speed in rad/sec
@@ -361,6 +443,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
         msg_to_pub.angular.z = speed * (-1); // we assume that a positive speed is for turning clockwise
         _speed_pub->publish(msg_to_pub);
         RCLCPP_INFO_STREAM(get_logger(), "Set angle velocity to " << speed);
+        const auto start_point = rclcpp::Clock().now();
     }
 
     /**
@@ -379,7 +462,7 @@ class ReachGoalActionServerNode : public rclcpp::Node
     {
         const auto acceptable_range = Radian(get_parameter(params::angle_threshold).as_double());
 
-        return abs(_storage.angle_to_waypoint().value()) <= acceptable_range.value();
+        return abs(_storage.angle_to_waypoint().to_double()) <= acceptable_range.to_double();
     }
 
     bool is_goal_reached() const noexcept
@@ -406,7 +489,15 @@ class ReachGoalActionServerNode : public rclcpp::Node
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<ReachGoalActionServerNode>());
+
+    rclcpp::executors::SingleThreadedExecutor exe;
+
+    auto lc_node = std::make_shared<ReachGoalActionServerNode>();
+
+    exe.add_node(lc_node->get_node_base_interface());
+
+    exe.spin();
+
     rclcpp::shutdown();
 
     return 0;

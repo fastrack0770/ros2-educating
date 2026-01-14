@@ -15,7 +15,7 @@ class Kilometer
 
     constexpr Kilometer(const Meter &value);
 
-    constexpr double value() const noexcept
+    constexpr double to_double() const noexcept
     {
         return _value;
     }
@@ -36,6 +36,6 @@ class Kilometer
 
 #include "wheeled_model_enhanced/types/meter.hpp"
 
-constexpr Kilometer::Kilometer(const Meter & value) : _value(value.value() / 1000)
+constexpr Kilometer::Kilometer(const Meter & value) : _value(value.to_double() / 1000)
 {
 }

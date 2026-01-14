@@ -27,6 +27,9 @@ To run the simulation:
 To turn the robot to the waypoint:  
 `ros2 run wheeled_model_enhanced reach_goal_action_client`  
 
+## Testing
+For integration testing please refer to [this page](./TESTING.md)
+
 ## wheeled_model_enhanced
 Contains:
 1. wheeled_model_enhanced model and other models  
