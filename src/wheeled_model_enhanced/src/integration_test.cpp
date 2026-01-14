@@ -38,7 +38,7 @@ std::string time_point_to_string(std::chrono::system_clock::time_point tp)
  * IntegrationTestNode
  *
  * To make a robot to move in different directions and angles to check
- * if all movemennts is alright
+ * if all movements are alright
  */
 class IntegrationTestNode : public rclcpp::Node
 {

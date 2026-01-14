@@ -17,7 +17,7 @@ class Degree
 
     constexpr Degree(const Radian &value);
 
-    constexpr double value() const noexcept
+    constexpr double to_double() const noexcept
     {
         return _value;
     }
@@ -43,6 +43,6 @@ class Degree
 
 #include "wheeled_model_enhanced/types/radian.hpp"
 
-constexpr Degree::Degree(const Radian &value) : _value(value.value() * 180 / M_PI)
+constexpr Degree::Degree(const Radian &value) : _value(value.to_double() * 180 / M_PI)
 {
 }

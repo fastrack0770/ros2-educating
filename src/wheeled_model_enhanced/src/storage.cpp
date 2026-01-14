@@ -202,7 +202,7 @@ Optional<Radian> Storage::robot_azimuth() const noexcept
         return Nullopt;
     }
 
-    return Radian(utils::get_euler_z_angle(_imu.value()) + _robot_imu_twist.value());
+    return Radian(utils::get_euler_z_angle(_imu.value()) + _robot_imu_twist.to_double());
 }
 
 void Storage::set_robot_imu_twist(Radian twist)

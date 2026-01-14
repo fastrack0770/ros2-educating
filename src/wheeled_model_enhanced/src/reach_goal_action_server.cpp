@@ -224,7 +224,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                 rclcpp::Rate loop_rate(1);
 
-                feedback->distance_to_point = _storage.distance_to_waypoint_gps().value();
+                feedback->distance_to_point = _storage.distance_to_waypoint_gps().to_double();
 
                 const auto start_point = rclcpp::Clock().now();
 
@@ -247,7 +247,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                             while (_is_running and not is_angle_reached())
                             {
-                                const auto angle_to_waypoint = _storage.angle_to_waypoint().value();
+                                const auto angle_to_waypoint = _storage.angle_to_waypoint().to_double();
 
                                 const auto [velocity_to_set, s_ac] = utils::get_speed(v_max, a_max, angle_to_waypoint);
 
@@ -257,7 +257,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                                 set_robot_angle_speed(velocity_to_set);
 
-                                while (_is_running and abs(_storage.angle_to_waypoint().value()) > s_ac)
+                                while (_is_running and abs(_storage.angle_to_waypoint().to_double()) > s_ac)
                                 {
                                     loop_rate.sleep();
                                 }
@@ -278,7 +278,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                     while (_is_running and not is_angle_reached())
                     {
-                        feedback->distance_to_point = _storage.distance_to_waypoint_gps().value();
+                        feedback->distance_to_point = _storage.distance_to_waypoint_gps().to_double();
 
                         goal_handle->publish_feedback(feedback);
                         loop_rate.sleep();
@@ -314,7 +314,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                             while (_is_running and not is_goal_reached())
                             {
-                                const auto distance_to_waypoint = _storage.distance_to_waypoint_related().value();
+                                const auto distance_to_waypoint = _storage.distance_to_waypoint_related().to_double();
 
                                 const auto [velocity_to_set, s_ac] =
                                     utils::get_speed(v_max, a_max, distance_to_waypoint);
@@ -346,7 +346,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                     while (_is_running and not is_goal_reached())
                     {
-                        feedback->distance_to_point = _storage.distance_to_waypoint_related().value();
+                        feedback->distance_to_point = _storage.distance_to_waypoint_related().to_double();
 
                         goal_handle->publish_feedback(feedback);
                         loop_rate.sleep();
@@ -457,7 +457,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
     {
         const auto acceptable_range = Radian(get_parameter(params::angle_threshold).as_double());
 
-        return abs(_storage.angle_to_waypoint().value()) <= acceptable_range.value();
+        return abs(_storage.angle_to_waypoint().to_double()) <= acceptable_range.to_double();
     }
 
     bool is_goal_reached() const noexcept
