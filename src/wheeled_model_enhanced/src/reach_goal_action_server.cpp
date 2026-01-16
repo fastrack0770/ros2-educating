@@ -148,6 +148,17 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
             rclcpp::PublisherOptionsWithAllocator<std::allocator<void>> options(options_base);
 
             _speed_pub = create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", qos, options);
+
+            _speed_pub_timer = create_wall_timer(std::chrono::milliseconds(1000), [this]() {
+                geometry_msgs::msg::Twist msg_to_pub;
+                msg_to_pub.linear.x = _linear_speed;
+                msg_to_pub.angular.z =
+                    _angular_speed * (-1); // we assume that a positive speed is for turning clockwise
+
+                _speed_pub->publish(msg_to_pub);
+
+                RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << msg_to_pub);
+            });
         }
 
         // odometry sub
@@ -457,10 +468,9 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
      */
     void set_robot_angle_speed(double speed)
     {
-        geometry_msgs::msg::Twist msg_to_pub;
-        msg_to_pub.angular.z = speed * (-1); // we assume that a positive speed is for turning clockwise
-        _speed_pub->publish(msg_to_pub);
-        RCLCPP_INFO_STREAM(get_logger(), "Set angle velocity to " << speed << ", angular z " << msg_to_pub.angular.z);
+        _angular_speed = speed;
+
+        _speed_pub_timer->execute_callback();
     }
 
     /**
@@ -469,17 +479,24 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
      */
     void set_robot_speed(double speed)
     {
-        geometry_msgs::msg::Twist msg_to_pub;
-        msg_to_pub.linear.x = speed;
-        _speed_pub->publish(msg_to_pub);
-        RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << speed);
+        _linear_speed = speed;
+
+        _speed_pub_timer->execute_callback();
     }
 
     void stop_robot()
     {
-        geometry_msgs::msg::Twist msg_to_pub;
-        _speed_pub->publish(msg_to_pub);
-        RCLCPP_INFO_STREAM(get_logger(), "Send command to stop robot");
+        _linear_speed = 0;
+        _angular_speed = 0;
+
+        _speed_pub_timer->execute_callback();
+    }
+
+    /**
+     * Used only by
+     */
+    void set_robot_speed()
+    {
     }
 
     bool is_angle_reached() const noexcept
@@ -503,7 +520,12 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr _robot_navsat_sub;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr _imu_sub;
+
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr _speed_pub;
+    rclcpp::TimerBase::SharedPtr _speed_pub_timer;
+    std::atomic<double> _linear_speed{0.f};
+    std::atomic<double> _angular_speed{0.f};
+
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _odometry_sub;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr _lidar_sub;
 

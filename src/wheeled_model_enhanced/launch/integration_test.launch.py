@@ -44,7 +44,7 @@ def generate_launch_description():
             {"distance_threshold": 1.0},
             {"max_angle_acceleration": 1.0},
             {"max_angle_velocity": 1.0},
-            {"robot_imu_twist": 1.5707963267948966},  # in rads
+            {"robot_imu_twist": 1.5707963267948966}, # in rads
             {"max_acceleration": 2.0},
             {"max_velocity": 10.0},
             {"robot_length_in_m": 1.5},
@@ -91,7 +91,7 @@ def generate_launch_description():
             ),
             simulation,
             Node(
-                package="ros_ign_bridge",
+                package="ros_gz_bridge",
                 executable="parameter_bridge",
                 arguments=[
                     "/model/wheeled_model_enhanced/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist",
