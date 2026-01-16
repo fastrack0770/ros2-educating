@@ -28,3 +28,6 @@ cp -r "$last_folder" "$dest_dir/"
 # Cleaning log
 echo $dest_dir/$folder_name/launch.log
 ./clean_log "Subscription taking message" "Subscription take succeeded" $dest_dir/$folder_name/launch.log
+
+# Open new log
+code $dest_dir/$folder_name/launch.log

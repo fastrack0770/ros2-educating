@@ -38,6 +38,7 @@ def generate_launch_description():
         executable="reach_goal_action_server",
         name="reach_goal_action_server_node",
         namespace="",
+        # ros_arguments=["--log-level", "debug"],
         parameters=[
             {"angle_threshold": 0.05},
             {"distance_threshold": 1.0},
@@ -116,7 +117,7 @@ def generate_launch_description():
                 OnStateTransition(
                     target_lifecycle_node=lifecycle_server,
                     goal_state="active",
-                    entities=[integration_test]
+                    entities=[integration_test],
                 )
             ),
             RegisterEventHandler(

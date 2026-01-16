@@ -82,13 +82,13 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
                 try
                 {
                     RCLCPP_DEBUG_STREAM(get_logger(), std::setprecision(8)
-                                                         << "ROBOT gps: " << _storage.robot_gps_pos()
-                                                         << ", topoc: " << _storage.robot_topo_pos()
-                                                         << ", related: " << _storage.robot_related_pos());
+                                                          << "ROBOT gps: " << _storage.robot_gps_pos()
+                                                          << ", topoc: " << _storage.robot_topo_pos()
+                                                          << ", related: " << _storage.robot_related_pos());
                     RCLCPP_DEBUG_STREAM(get_logger(), std::setprecision(8)
-                                                         << "distance gps: " << _storage.distance_to_waypoint_gps()
-                                                         << ", related: " << _storage.distance_to_waypoint_related()
-                                                         << ", angle to wp (rad): " << _storage.angle_to_waypoint());
+                                                          << "distance gps: " << _storage.distance_to_waypoint_gps()
+                                                          << ", related: " << _storage.distance_to_waypoint_related()
+                                                          << ", angle to wp (rad): " << _storage.angle_to_waypoint());
                 }
                 catch (const std::exception &e)
                 {
@@ -108,8 +108,8 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
                 try
                 {
                     RCLCPP_DEBUG_STREAM_THROTTLE(get_logger(), *get_clock(), 1000,
-                                                "robot azimuth: " << _storage.robot_azimuth() << ", angle to waypoint "
-                                                                  << _storage.angle_to_waypoint());
+                                                 "robot azimuth: " << _storage.robot_azimuth() << ", angle to waypoint "
+                                                                   << _storage.angle_to_waypoint());
                 }
                 catch (const std::exception &e)
                 {
@@ -123,7 +123,31 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
         // speed pub
         {
-            _speed_pub = create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+            rclcpp::QoS qos(10);
+            qos.reliable();
+
+            rclcpp::PublisherOptionsBase options_base;
+            options_base.event_callbacks.deadline_callback = [this](const rclcpp::QOSDeadlineOfferedInfo &info) {
+                RCLCPP_ERROR_STREAM(get_logger(), "Speed publisher - deadline missed, total count "
+                                                      << info.total_count << ", total count change "
+                                                      << info.total_count_change);
+            };
+            options_base.event_callbacks.incompatible_qos_callback =
+                [this](const rclcpp::QOSOfferedIncompatibleQoSInfo &info) {
+                    RCLCPP_ERROR_STREAM(get_logger(), "Speed publisher - offered incompatible qos, total count "
+                                                          << info.total_count << ", total count change "
+                                                          << info.total_count_change << ", last_policy_kind "
+                                                          << info.last_policy_kind);
+                };
+            options_base.event_callbacks.liveliness_callback = [this](const rclcpp::QOSLivelinessLostInfo &info) {
+                RCLCPP_ERROR_STREAM(get_logger(), "Speed publisher - liveliness lost, total count "
+                                                      << info.total_count << ", total count change "
+                                                      << info.total_count_change);
+            };
+
+            rclcpp::PublisherOptionsWithAllocator<std::allocator<void>> options(options_base);
+
+            _speed_pub = create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", qos, options);
         }
 
         // odometry sub
@@ -179,7 +203,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
         const auto handle_goal =
             [this](const rclcpp_action::GoalUUID &,
                    std::shared_ptr<const ReachGoalAction::Goal> goal) -> rclcpp_action::GoalResponse {
-            if (is_active())
+            if (not is_active())
             {
                 RCLCPP_ERROR_STREAM(get_logger(),
                                     "Reject goal due the server is not in activate state, current state is - "
@@ -257,12 +281,12 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                                 set_robot_angle_speed(velocity_to_set);
 
-                                while (_is_running and abs(_storage.angle_to_waypoint().to_double()) > s_ac)
+                                while (_is_running and fabs(_storage.angle_to_waypoint().to_double()) > s_ac)
                                 {
                                     loop_rate.sleep();
                                 }
 
-                                set_robot_angle_speed(0);
+                                stop_robot();
 
                                 while (_is_running and _storage.has_angular_speed())
                                 {
@@ -402,12 +426,6 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
         _action_server.reset();
 
-        _robot_navsat_sub.reset();
-        _imu_sub.reset();
-        _speed_pub.reset();
-        _odometry_sub.reset();
-        _lidar_sub.reset();
-
         return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
     }
 
@@ -429,7 +447,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
     bool is_active()
     {
-        return LifecycleNode::get_current_state().label() != "active";
+        return LifecycleNode::get_current_state().label() == "active";
     }
 
   private:
@@ -442,8 +460,7 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
         geometry_msgs::msg::Twist msg_to_pub;
         msg_to_pub.angular.z = speed * (-1); // we assume that a positive speed is for turning clockwise
         _speed_pub->publish(msg_to_pub);
-        RCLCPP_INFO_STREAM(get_logger(), "Set angle velocity to " << speed);
-        const auto start_point = rclcpp::Clock().now();
+        RCLCPP_INFO_STREAM(get_logger(), "Set angle velocity to " << speed << ", angular z " << msg_to_pub.angular.z);
     }
 
     /**
@@ -458,11 +475,18 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
         RCLCPP_INFO_STREAM(get_logger(), "Set velocity to " << speed);
     }
 
+    void stop_robot()
+    {
+        geometry_msgs::msg::Twist msg_to_pub;
+        _speed_pub->publish(msg_to_pub);
+        RCLCPP_INFO_STREAM(get_logger(), "Send command to stop robot");
+    }
+
     bool is_angle_reached() const noexcept
     {
         const auto acceptable_range = Radian(get_parameter(params::angle_threshold).as_double());
 
-        return abs(_storage.angle_to_waypoint().to_double()) <= acceptable_range.to_double();
+        return fabs(_storage.angle_to_waypoint().to_double()) <= acceptable_range.to_double();
     }
 
     bool is_goal_reached() const noexcept

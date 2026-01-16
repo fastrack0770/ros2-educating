@@ -2,9 +2,9 @@
 
 #include "wheeled_model_enhanced/utils.hpp"
 
-TEST(utils, abs)
+TEST(utils, vec_abs)
 {
-    EXPECT_FLOAT_EQ(6.020797289, utils::abs(Vector3D(3.2, -5.1, 0)));
+    EXPECT_FLOAT_EQ(6.020797289, utils::vec_abs(Vector3D(3.2, -5.1, 0)));
 }
 
 TEST(utils, earth_radius_at)
@@ -219,5 +219,10 @@ TEST(utils, get_speed)
         const auto [velocity_to_set, s_ac] = utils::get_speed(Radian(10), Radian(10), Radian(3.14021));
         EXPECT_FLOAT_EQ(5.6037579, velocity_to_set);
         EXPECT_FLOAT_EQ(1.570105, s_ac);
+    }
+    {
+        const auto [velocity_to_set, s_ac] = utils::get_speed(Radian(1), Radian(1), Radian(-0.644114));
+        EXPECT_FLOAT_EQ(-0.80256712, velocity_to_set);
+        EXPECT_FLOAT_EQ(0.32205701, s_ac);
     }
 }

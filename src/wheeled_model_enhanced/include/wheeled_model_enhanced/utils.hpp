@@ -21,10 +21,10 @@ inline double to_rad(double value)
 }
 
 /**
- * abs
+ * vec_abs
  * Get a module from a 3d vector. Result in meters
  */
-inline double abs(Vector3D vec)
+inline double vec_abs(Vector3D vec)
 {
     return std::sqrt(std::pow(vec.x.to_double(), 2) + std::pow(vec.y.to_double(), 2) + std::pow(vec.z.to_double(), 2));
 }
@@ -44,7 +44,7 @@ inline Vector3D make_vector(const Cartesian &lhv, const Cartesian &rhv)
  */
 inline double get_angle_between_vectors(const Vector3D &lhv, const Vector3D &rhv)
 {
-    return acos((lhv * rhv) / (abs(lhv) * abs(rhv)));
+    return acos((lhv * rhv) / (vec_abs(lhv) * vec_abs(rhv)));
 }
 
 /**
@@ -89,9 +89,9 @@ inline double earth_radius_at_2(const Pos &pos)
  */
 inline Meter distance(const Pos &lhv, const Pos &rhv)
 {
-    const double a = std::pow(std::sin(std::abs(lhv.latitude().to_double() - rhv.latitude().to_double()) / 2), 2) +
+    const double a = std::pow(std::sin(std::fabs(lhv.latitude().to_double() - rhv.latitude().to_double()) / 2), 2) +
                      std::cos(lhv.latitude().to_double()) * std::cos(rhv.latitude().to_double()) *
-                         std::pow(std::sin(std::abs(lhv.longitude().to_double() - rhv.longitude().to_double()) / 2), 2);
+                         std::pow(std::sin(std::fabs(lhv.longitude().to_double() - rhv.longitude().to_double()) / 2), 2);
     const double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
 
     const double earth_radius = earth_radius_at(lhv); // in meters
@@ -200,7 +200,7 @@ inline Plane get_plane(const Point &point, const Vector3D &lhv, const Vector3D &
 
 inline Vector3D normalize(Vector3D vec)
 {
-    const auto m = abs(vec);
+    const auto m = vec_abs(vec);
     return {vec.x / m, vec.y / m, vec.z / m};
 }
 
@@ -275,13 +275,13 @@ inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, 
 {
     double velocity_to_set = 0.f;
     double s_ac = pow(max_speed, 2) / (2 * acceleration); // distance, after which the velocity will become maximum
-    if (std::abs(desired_distance) > 2 * s_ac)
+    if (std::fabs(desired_distance) > 2 * s_ac)
     {
         velocity_to_set = max_speed * utils::sign(desired_distance);
     }
     else
     {
-        s_ac = std::abs(desired_distance / 2);
+        s_ac = std::fabs(desired_distance / 2);
         velocity_to_set = sqrt(2 * acceleration * s_ac) * utils::sign(desired_distance);
     }
 
@@ -292,8 +292,8 @@ inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(Radian max_speed, 
                                                               Radian desired_distance)
 {
     double velocity_to_set = 0.f;
-    const auto half_dist = desired_distance / 2;
-    const auto half_dist_velocity = sqrt(2 * acceleration.to_double() * half_dist.to_double());
+    const auto half_dist = fabs(desired_distance.to_double() / 2);
+    const auto half_dist_velocity = sqrt(2 * acceleration.to_double() * half_dist);
     if (half_dist_velocity > max_speed.to_double())
     {
         velocity_to_set = max_speed.to_double();
