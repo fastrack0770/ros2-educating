@@ -114,17 +114,17 @@ Optional<double> Storage::angular_speed() const noexcept
     return _odometry->twist.twist.angular.z;
 }
 
-Optional<bool> Storage::has_angular_speed() const noexcept
+bool Storage::has_angular_speed() const noexcept
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
     const auto ang_speed = angular_speed();
     if (not ang_speed.has_value())
     {
-        return Nullopt;
+        return false;
     }
 
-    return abs(ang_speed.value()) > 0;
+    return fabs(ang_speed.value()) > 0;
 }
 
 Optional<double> Storage::linear_speed() const noexcept
@@ -139,17 +139,17 @@ Optional<double> Storage::linear_speed() const noexcept
     return _odometry->twist.twist.linear.x;
 }
 
-Optional<bool> Storage::has_linear_speed() const noexcept
+bool Storage::has_linear_speed() const noexcept
 {
     const std::lock_guard<decltype(_m)> lock(_m);
 
     const auto lin_speed = linear_speed();
     if (not lin_speed.has_value())
     {
-        return Nullopt;
+        return false;
     }
 
-    return abs(lin_speed.value()) > 0;
+    return fabs(lin_speed.value()) > 0;
 }
 
 /**

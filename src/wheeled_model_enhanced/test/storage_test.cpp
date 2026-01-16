@@ -15,9 +15,9 @@ TEST(storage, just_created)
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_gps().to_double());
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_related().to_double());
     EXPECT_FALSE(storage.angular_speed().has_value());
-    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed());
     EXPECT_FALSE(storage.linear_speed().has_value());
-    EXPECT_FALSE(storage.has_linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
     EXPECT_FALSE(storage.linear_acceleration().has_value());
     EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().to_double());
@@ -59,9 +59,9 @@ TEST(storage, got_robot_pos_first)
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_gps().to_double());
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_related().to_double());
     EXPECT_FALSE(storage.angular_speed().has_value());
-    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed());
     EXPECT_FALSE(storage.linear_speed().has_value());
-    EXPECT_FALSE(storage.has_linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
     EXPECT_FALSE(storage.linear_acceleration().has_value());
     EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().to_double());
@@ -108,9 +108,9 @@ TEST(storage, got_robot_pos_first)
     EXPECT_FLOAT_EQ(8.2420483, storage.distance_to_waypoint_gps().to_double());
     EXPECT_FLOAT_EQ(8.3322735, storage.distance_to_waypoint_related().to_double());
     EXPECT_FALSE(storage.angular_speed().has_value());
-    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed());
     EXPECT_FALSE(storage.linear_speed().has_value());
-    EXPECT_FALSE(storage.has_linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
     EXPECT_FALSE(storage.linear_acceleration().has_value());
     EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().to_double()); // 0 due the storage didn't received imu - TODO make an Optional 
@@ -163,9 +163,9 @@ TEST(storage, got_waypoint_pos_first)
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_gps().to_double());
     EXPECT_FLOAT_EQ(0, storage.distance_to_waypoint_related().to_double());
     EXPECT_FALSE(storage.angular_speed().has_value());
-    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed());
     EXPECT_FALSE(storage.linear_speed().has_value());
-    EXPECT_FALSE(storage.has_linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
     EXPECT_FALSE(storage.linear_acceleration().has_value());
     EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().to_double());
@@ -212,9 +212,9 @@ TEST(storage, got_waypoint_pos_first)
     EXPECT_FLOAT_EQ(8.2420483, storage.distance_to_waypoint_gps().to_double());
     EXPECT_FLOAT_EQ(8.3322735, storage.distance_to_waypoint_related().to_double());
     EXPECT_FALSE(storage.angular_speed().has_value());
-    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed());
     EXPECT_FALSE(storage.linear_speed().has_value());
-    EXPECT_FALSE(storage.has_linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed());
     EXPECT_FLOAT_EQ(0, storage.angular_acceleration());
     EXPECT_FALSE(storage.linear_acceleration().has_value());
     EXPECT_FLOAT_EQ(0, storage.angle_to_waypoint().to_double()); // 0 due the storage didn't received imu
@@ -241,9 +241,9 @@ TEST(storage, angular_linear_speed)
     Storage storage;
 
     EXPECT_FALSE(storage.angular_speed().has_value());
-    EXPECT_FALSE(storage.has_angular_speed().has_value());
+    EXPECT_FALSE(storage.has_angular_speed());
     EXPECT_FALSE(storage.linear_speed().has_value());
-    EXPECT_FALSE(storage.has_linear_speed().has_value());
+    EXPECT_FALSE(storage.has_linear_speed());
 
     // got odometry
     {
@@ -255,9 +255,9 @@ TEST(storage, angular_linear_speed)
     }
 
     EXPECT_FLOAT_EQ(5, storage.angular_speed().value());
-    EXPECT_TRUE(storage.has_angular_speed().value());
+    EXPECT_TRUE(storage.has_angular_speed());
     EXPECT_FLOAT_EQ(7, storage.linear_speed().value());
-    EXPECT_TRUE(storage.has_linear_speed().value());
+    EXPECT_TRUE(storage.has_linear_speed());
 }
 
 TEST(storage, angular_linear_acceleration)
