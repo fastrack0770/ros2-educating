@@ -124,7 +124,7 @@ bool Storage::has_angular_speed() const noexcept
         return false;
     }
 
-    return abs(ang_speed.value()) > 0.01;
+    return fabs(ang_speed.value()) > 0;
 }
 
 Optional<double> Storage::linear_speed() const noexcept
@@ -149,7 +149,7 @@ bool Storage::has_linear_speed() const noexcept
         return false;
     }
 
-    return abs(lin_speed.value()) > 0.01;
+    return fabs(lin_speed.value()) > 0;
 }
 
 /**

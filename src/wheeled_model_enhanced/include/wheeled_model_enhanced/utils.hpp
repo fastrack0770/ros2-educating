@@ -269,7 +269,6 @@ namespace
 {
 using SpeedToSet = double;
 using AccelerationDistance = double;
-using AccelerationTime = double;
 } // namespace
 inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, double acceleration,
                                                               double desired_distance)
@@ -289,8 +288,8 @@ inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, 
     return {velocity_to_set, s_ac};
 }
 
-inline std::tuple<SpeedToSet, AccelerationDistance, AccelerationTime> get_speed(Radian max_speed, Radian acceleration,
-                                                                                Radian desired_distance)
+inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(Radian max_speed, Radian acceleration,
+                                                              Radian desired_distance)
 {
     double velocity_to_set = 0.f;
     const auto half_dist = desired_distance / 2;
@@ -305,8 +304,7 @@ inline std::tuple<SpeedToSet, AccelerationDistance, AccelerationTime> get_speed(
     }
 
     const auto s_ac = pow(velocity_to_set, 2) / (2 * acceleration.to_double());
-    const auto t_ac = velocity_to_set / acceleration.to_double();
-    return {velocity_to_set * utils::sign(desired_distance), s_ac, t_ac};
+    return {velocity_to_set * utils::sign(desired_distance), s_ac};
 }
 
 } // end of namespace utils

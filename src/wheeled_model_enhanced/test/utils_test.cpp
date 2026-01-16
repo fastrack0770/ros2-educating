@@ -216,9 +216,8 @@ TEST(utils, get_speed)
         EXPECT_FLOAT_EQ(0.25, s_ac);
     }
     {
-        const auto [velocity_to_set, s_ac, t_ac] = utils::get_speed(Radian(10), Radian(10), Radian(3.14021));
+        const auto [velocity_to_set, s_ac] = utils::get_speed(Radian(10), Radian(10), Radian(3.14021));
         EXPECT_FLOAT_EQ(5.6037579, velocity_to_set);
         EXPECT_FLOAT_EQ(1.570105, s_ac);
-        EXPECT_FLOAT_EQ(0.56037575, t_ac);
     }
 }
