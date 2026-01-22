@@ -284,15 +284,15 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
                             {
                                 const auto angle_to_waypoint = _storage.angle_to_waypoint();
 
-                                const auto [velocity_to_set, s_ac] = utils::get_speed(v_max, a_max, angle_to_waypoint);
+                                const auto [velocity_to_set, s_ac] = utils::get_speed<Radian>(v_max, a_max, angle_to_waypoint);
 
                                 RCLCPP_INFO_STREAM(get_logger(), "Turn to " << angle_to_waypoint << ", velocity "
                                                                             << velocity_to_set << ", north angle "
                                                                             << _storage.robot_azimuth());
 
-                                set_robot_angle_speed(velocity_to_set);
+                                set_robot_angle_speed(velocity_to_set.to_double());
 
-                                while (_is_running and fabs(_storage.angle_to_waypoint().to_double()) > s_ac)
+                                while (_is_running and fabs(_storage.angle_to_waypoint().to_double()) > s_ac.to_double())
                                 {
                                     loop_rate.sleep();
                                 }
@@ -333,8 +333,8 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                 // go to the waypoint
                 {
-                    const auto a_max = get_parameter(params::max_acceleration).as_double(); // meter/sec^2
-                    const auto v_max = get_parameter(params::max_velocity).as_double();     // meter/sec
+                    const auto a_max = Meter(get_parameter(params::max_acceleration).as_double()); // meter/sec^2
+                    const auto v_max = Meter(get_parameter(params::max_velocity).as_double());     // meter/sec
 
                     if (not _is_running)
                     {
@@ -349,16 +349,16 @@ class ReachGoalActionServerNode : public rclcpp_lifecycle::LifecycleNode
 
                             while (_is_running and not is_goal_reached())
                             {
-                                const auto distance_to_waypoint = _storage.distance_to_waypoint_related().to_double();
+                                const auto distance_to_waypoint = _storage.distance_to_waypoint_related();
 
                                 const auto [velocity_to_set, s_ac] =
-                                    utils::get_speed(v_max, a_max, distance_to_waypoint);
+                                    utils::get_speed<Meter>(v_max, a_max, distance_to_waypoint);
 
                                 RCLCPP_INFO_STREAM(get_logger(), "Go to waypoint, velocity " << velocity_to_set
                                                                                              << ", distance "
                                                                                              << distance_to_waypoint);
 
-                                set_robot_speed(velocity_to_set);
+                                set_robot_speed(velocity_to_set.to_double());
 
                                 while (_is_running and _storage.distance_to_waypoint_related() > s_ac)
                                 {

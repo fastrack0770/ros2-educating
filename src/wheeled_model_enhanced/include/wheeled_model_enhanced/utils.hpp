@@ -89,9 +89,10 @@ inline double earth_radius_at_2(const Pos &pos)
  */
 inline Meter distance(const Pos &lhv, const Pos &rhv)
 {
-    const double a = std::pow(std::sin(std::fabs(lhv.latitude().to_double() - rhv.latitude().to_double()) / 2), 2) +
-                     std::cos(lhv.latitude().to_double()) * std::cos(rhv.latitude().to_double()) *
-                         std::pow(std::sin(std::fabs(lhv.longitude().to_double() - rhv.longitude().to_double()) / 2), 2);
+    const double a =
+        std::pow(std::sin(std::fabs(lhv.latitude().to_double() - rhv.latitude().to_double()) / 2), 2) +
+        std::cos(lhv.latitude().to_double()) * std::cos(rhv.latitude().to_double()) *
+            std::pow(std::sin(std::fabs(lhv.longitude().to_double() - rhv.longitude().to_double()) / 2), 2);
     const double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
 
     const double earth_radius = earth_radius_at(lhv); // in meters
@@ -262,34 +263,12 @@ template <typename T> inline int sign(T val)
 
 /**
  * get_speed
- * This function returns what speed must be set and the acceleration distance, that will be if the robot
+ * This function returns what LINEAR speed must be set and the acceleration distance, that will be if the robot
  * want to move desired_distance with setted max_speed and acceleration
  */
-namespace
-{
-using SpeedToSet = double;
-using AccelerationDistance = double;
-} // namespace
-inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, double acceleration,
-                                                              double desired_distance)
-{
-    double velocity_to_set = 0.f;
-    double s_ac = pow(max_speed, 2) / (2 * acceleration); // distance, after which the velocity will become maximum
-    if (std::fabs(desired_distance) > 2 * s_ac)
-    {
-        velocity_to_set = max_speed * utils::sign(desired_distance);
-    }
-    else
-    {
-        s_ac = std::fabs(desired_distance / 2);
-        velocity_to_set = sqrt(2 * acceleration * s_ac) * utils::sign(desired_distance);
-    }
-
-    return {velocity_to_set, s_ac};
-}
-
-inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(Radian max_speed, Radian acceleration,
-                                                              Radian desired_distance)
+template <typename Unit>
+inline std::tuple<Unit /*Speed to set*/, Unit /*Acceleration distance*/> get_speed(Unit max_speed, Unit acceleration,
+                                                                                   Unit desired_distance)
 {
     double velocity_to_set = 0.f;
     const auto half_dist = fabs(desired_distance.to_double() / 2);
