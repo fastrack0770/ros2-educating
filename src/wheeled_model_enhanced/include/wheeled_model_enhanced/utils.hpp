@@ -5,7 +5,9 @@
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 
+#include <chrono>
 #include <cmath>
+#include <type_traits>
 
 namespace utils
 {
@@ -261,29 +263,68 @@ template <typename T> inline int sign(T val)
     return (T(0) < val) - (val < T(0));
 }
 
+template <typename Unit> constexpr bool is_custom_unit() noexcept
+{
+    return std::is_same<Unit, Meter>::value || std::is_same<Unit, Kilometer>::value ||
+           std::is_same<Unit, Radian>::value || std::is_same<Unit, Degree>::value;
+}
+
+template <typename Unit> using EnableIfCustomUnit = std::enable_if_t<is_custom_unit<Unit>(), bool>;
+
+/**
+ * fabs
+ * fabs for custom types
+ */
+template <typename Unit, EnableIfCustomUnit<Unit> = true> Unit fabs(Unit unit)
+{
+    return std::fabs(unit.to_double());
+}
+
+/**
+ * sqrt
+ * sqrt for custom types
+ */
+template <typename Unit, EnableIfCustomUnit<Unit> = true> Unit sqrt(Unit unit)
+{
+    return std::sqrt(unit.to_double());
+}
+
+/**
+ * pow
+ * pow for custom types
+ */
+template <typename Unit, EnableIfCustomUnit<Unit> = true> Unit pow(Unit unit, double by)
+{
+    return std::pow(unit.to_double(), by);
+}
+
 /**
  * get_speed
  * This function returns what LINEAR speed must be set and the acceleration distance, that will be if the robot
  * want to move desired_distance with setted max_speed and acceleration
  */
-template <typename Unit>
-inline std::tuple<Unit /*Speed to set*/, Unit /*Acceleration distance*/> get_speed(Unit max_speed, Unit acceleration,
-                                                                                   Unit desired_distance)
+using TimeBeforeBreaking = double;
+template <typename Unit, EnableIfCustomUnit<Unit> = true>
+inline std::tuple<Unit /*Speed to set*/, Unit /*Acceleration distance*/, TimeBeforeBreaking> get_speed(
+    Unit max_speed, Unit acceleration, Unit desired_distance)
 {
-    double velocity_to_set = 0.f;
-    const auto half_dist = fabs(desired_distance.to_double() / 2);
-    const auto half_dist_velocity = sqrt(2 * acceleration.to_double() * half_dist);
-    if (half_dist_velocity > max_speed.to_double())
+    Unit velocity_to_set{0.f};
+    const auto half_dist = fabs(desired_distance / 2);
+    const auto half_dist_velocity = sqrt(2 * acceleration * half_dist);
+    if (half_dist_velocity > max_speed)
     {
-        velocity_to_set = max_speed.to_double();
+        velocity_to_set = max_speed;
     }
     else
     {
         velocity_to_set = half_dist_velocity;
     }
 
-    const auto s_ac = pow(velocity_to_set, 2) / (2 * acceleration.to_double());
-    return {velocity_to_set * utils::sign(desired_distance), s_ac};
+    const auto s_ac = pow<Unit>(velocity_to_set, 2) / (2 * acceleration);
+    const auto s_at_max_speed = velocity_to_set == max_speed ? fabs<Unit>(desired_distance) - 2 * s_ac : 0;
+    const auto t_before_break = velocity_to_set / acceleration + s_at_max_speed / max_speed;
+
+    return {velocity_to_set * sign(desired_distance), s_ac, t_before_break.to_double()};
 }
 
 } // end of namespace utils

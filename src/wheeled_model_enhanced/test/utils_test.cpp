@@ -196,33 +196,33 @@ TEST(utils, get_angle_between_vectors_signed)
 TEST(utils, get_speed)
 {
     {
-        const auto [velocity_to_set, s_ac] = utils::get_speed(Meter(1), Meter(2), Meter(-0.433544));
+        const auto [velocity_to_set, s_ac, t_before_break] = utils::get_speed(Meter(1), Meter(2), Meter(-0.433544));
         EXPECT_FLOAT_EQ(-0.93117559, velocity_to_set.to_double());
         EXPECT_FLOAT_EQ(0.216772, s_ac.to_double());
+        EXPECT_FLOAT_EQ(0.46558779, t_before_break);
     }
     {
-        const auto [velocity_to_set, s_ac] = utils::get_speed(Meter(10), Meter(1), Meter(21.0079));
+        const auto [velocity_to_set, s_ac, t_before_break] = utils::get_speed(Meter(10), Meter(1), Meter(21.0079));
         EXPECT_FLOAT_EQ(4.5834374, velocity_to_set.to_double());
         EXPECT_FLOAT_EQ(10.50395, s_ac.to_double());
+        EXPECT_FLOAT_EQ(4.5834374, t_before_break);
     }
     {
-        const auto [velocity_to_set, s_ac] = utils::get_speed(Meter(1), Meter(2), Meter(-2.70037));
+        const auto [velocity_to_set, s_ac, t_before_break] = utils::get_speed(Meter(1), Meter(2), Meter(-2.70037));
         EXPECT_FLOAT_EQ(-1, velocity_to_set.to_double());
         EXPECT_FLOAT_EQ(0.25, s_ac.to_double());
+        EXPECT_FLOAT_EQ(2.7003701, t_before_break);
     }
     {
-        const auto [velocity_to_set, s_ac] = utils::get_speed(Meter(1), Meter(2), Meter(-2.70037));
-        EXPECT_FLOAT_EQ(-1, velocity_to_set.to_double());
-        EXPECT_FLOAT_EQ(0.25, s_ac.to_double());
-    }
-    {
-        const auto [velocity_to_set, s_ac] = utils::get_speed(Radian(10), Radian(10), Radian(3.14021));
+        const auto [velocity_to_set, s_ac, t_before_break] = utils::get_speed(Radian(10), Radian(10), Radian(3.14021));
         EXPECT_FLOAT_EQ(5.6037579, velocity_to_set.to_double());
         EXPECT_FLOAT_EQ(1.570105, s_ac.to_double());
+        EXPECT_FLOAT_EQ(0.56037575, t_before_break);
     }
     {
-        const auto [velocity_to_set, s_ac] = utils::get_speed(Radian(1), Radian(1), Radian(-0.644114));
+        const auto [velocity_to_set, s_ac, t_before_break] = utils::get_speed(Radian(1), Radian(1), Radian(-0.644114));
         EXPECT_FLOAT_EQ(-0.80256712, velocity_to_set.to_double());
         EXPECT_FLOAT_EQ(0.32205701, s_ac.to_double());
+        EXPECT_FLOAT_EQ(0.80256712, t_before_break);
     }
 }
