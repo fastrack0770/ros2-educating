@@ -1,4 +1,4 @@
-# ROS2 education project
+# Multifunctional robot with chassis
 
 [![CI](https://github.com/fastrack0770/ros2-educating/actions/workflows/ci.yml/badge.svg)](https://github.com/fastrack0770/ros2-educating/actions/workflows/ci.yml)
 
