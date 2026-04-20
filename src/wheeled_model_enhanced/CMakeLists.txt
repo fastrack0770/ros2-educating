@@ -16,6 +16,8 @@ find_package(ros_ign_gazebo REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
+find_package(laser_geometry REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 # Generate custom interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -72,11 +74,20 @@ ament_target_dependencies(integration_test rclcpp action_msgs rclcpp_action)
 target_include_directories(integration_test PUBLIC include)
 target_link_libraries(integration_test "${cpp_typesupport_target}")
 
+# scan_to_cloud
+add_executable(scan_to_cloud
+  src/scan_to_cloud.cpp
+)
+ament_target_dependencies(scan_to_cloud rclcpp sensor_msgs laser_geometry tf2_ros)
+target_include_directories(scan_to_cloud PUBLIC include)
+target_link_libraries(scan_to_cloud "${cpp_typesupport_target}")
+
 # Install
 install(TARGETS
   reach_goal_action_server
   reach_goal_action_client
   integration_test
+  scan_to_cloud
   DESTINATION lib/${PROJECT_NAME}
 )
 
