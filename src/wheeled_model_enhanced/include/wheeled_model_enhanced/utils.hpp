@@ -5,7 +5,9 @@
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 
+#include <chrono>
 #include <cmath>
+#include <type_traits>
 
 namespace utils
 {
@@ -21,10 +23,10 @@ inline double to_rad(double value)
 }
 
 /**
- * abs
+ * vec_abs
  * Get a module from a 3d vector. Result in meters
  */
-inline double abs(Vector3D vec)
+inline double vec_abs(Vector3D vec)
 {
     return std::sqrt(std::pow(vec.x.to_double(), 2) + std::pow(vec.y.to_double(), 2) + std::pow(vec.z.to_double(), 2));
 }
@@ -44,7 +46,7 @@ inline Vector3D make_vector(const Cartesian &lhv, const Cartesian &rhv)
  */
 inline double get_angle_between_vectors(const Vector3D &lhv, const Vector3D &rhv)
 {
-    return acos((lhv * rhv) / (abs(lhv) * abs(rhv)));
+    return acos((lhv * rhv) / (vec_abs(lhv) * vec_abs(rhv)));
 }
 
 /**
@@ -89,9 +91,10 @@ inline double earth_radius_at_2(const Pos &pos)
  */
 inline Meter distance(const Pos &lhv, const Pos &rhv)
 {
-    const double a = std::pow(std::sin(std::abs(lhv.latitude().to_double() - rhv.latitude().to_double()) / 2), 2) +
-                     std::cos(lhv.latitude().to_double()) * std::cos(rhv.latitude().to_double()) *
-                         std::pow(std::sin(std::abs(lhv.longitude().to_double() - rhv.longitude().to_double()) / 2), 2);
+    const double a =
+        std::pow(std::sin(std::fabs(lhv.latitude().to_double() - rhv.latitude().to_double()) / 2), 2) +
+        std::cos(lhv.latitude().to_double()) * std::cos(rhv.latitude().to_double()) *
+            std::pow(std::sin(std::fabs(lhv.longitude().to_double() - rhv.longitude().to_double()) / 2), 2);
     const double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
 
     const double earth_radius = earth_radius_at(lhv); // in meters
@@ -107,8 +110,8 @@ inline Meter distance(const Pos &lhv, const Pos &rhv)
  */
 inline Meter distance(const Cartesian &lhv, const Cartesian &rhv)
 {
-    return Meter(
-        sqrt(pow((lhv.x - rhv.x).to_double(), 2) + pow((lhv.y - rhv.y).to_double(), 2) + pow((lhv.z - rhv.z).to_double(), 2)));
+    return Meter(sqrt(pow((lhv.x - rhv.x).to_double(), 2) + pow((lhv.y - rhv.y).to_double(), 2) +
+                      pow((lhv.z - rhv.z).to_double(), 2)));
 }
 
 /**
@@ -200,7 +203,7 @@ inline Plane get_plane(const Point &point, const Vector3D &lhv, const Vector3D &
 
 inline Vector3D normalize(Vector3D vec)
 {
-    const auto m = abs(vec);
+    const auto m = vec_abs(vec);
     return {vec.x / m, vec.y / m, vec.z / m};
 }
 
@@ -217,7 +220,8 @@ inline double get_angle_between_vectors_signed(const Vector3D &lhv, const Vector
  * get_angle_to_waypoint_signed
  * Get angle, which to rotate to robot will face waypoint. The angle is positive when waypoint to the right of the robot
  */
-inline Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint, const Radian &robot_azimuth)
+inline Radian get_angle_to_waypoint_signed(const Cartesian &robot, const Cartesian &waypoint,
+                                           const Radian &robot_azimuth)
 {
     const auto wr_vec = make_vector(robot, waypoint); // Vector from robot to waypoint
     const auto rn_vec = make_vector(robot, Cartesian(robot.x + 100, robot.y, robot.z));
@@ -259,26 +263,68 @@ template <typename T> inline int sign(T val)
     return (T(0) < val) - (val < T(0));
 }
 
-namespace
+template <typename Unit> constexpr bool is_custom_unit() noexcept
 {
-using SpeedToSet = double;
-using AccelerationDistance = double;
-} // namespace
-inline std::tuple<SpeedToSet, AccelerationDistance> get_speed(double max_speed, double acceleration, double desired_distance)
+    return std::is_same<Unit, Meter>::value || std::is_same<Unit, Kilometer>::value ||
+           std::is_same<Unit, Radian>::value || std::is_same<Unit, Degree>::value;
+}
+
+template <typename Unit> using EnableIfCustomUnit = std::enable_if_t<is_custom_unit<Unit>(), bool>;
+
+/**
+ * fabs
+ * fabs for custom types
+ */
+template <typename Unit, EnableIfCustomUnit<Unit> = true> Unit fabs(Unit unit)
 {
-    double velocity_to_set = 0.f;
-    double s_ac = pow(max_speed, 2) / (2 * acceleration); // distance, after which the velocity will become maximum
-    if (std::abs(desired_distance) > 2 * s_ac)
+    return std::fabs(unit.to_double());
+}
+
+/**
+ * sqrt
+ * sqrt for custom types
+ */
+template <typename Unit, EnableIfCustomUnit<Unit> = true> Unit sqrt(Unit unit)
+{
+    return std::sqrt(unit.to_double());
+}
+
+/**
+ * pow
+ * pow for custom types
+ */
+template <typename Unit, EnableIfCustomUnit<Unit> = true> Unit pow(Unit unit, double by)
+{
+    return std::pow(unit.to_double(), by);
+}
+
+/**
+ * get_speed
+ * This function returns what LINEAR speed must be set and the acceleration distance, that will be if the robot
+ * want to move desired_distance with setted max_speed and acceleration
+ */
+using TimeBeforeBreaking = double;
+template <typename Unit, EnableIfCustomUnit<Unit> = true>
+inline std::tuple<Unit /*Speed to set*/, Unit /*Acceleration distance*/, TimeBeforeBreaking> get_speed(
+    Unit max_speed, Unit acceleration, Unit desired_distance)
+{
+    Unit velocity_to_set{0.f};
+    const auto half_dist = fabs(desired_distance / 2);
+    const auto half_dist_velocity = sqrt(2 * acceleration * half_dist);
+    if (half_dist_velocity > max_speed)
     {
-        velocity_to_set = max_speed * utils::sign(desired_distance);
+        velocity_to_set = max_speed;
     }
     else
     {
-        s_ac = std::abs(desired_distance / 2);
-        velocity_to_set = sqrt(2 * acceleration * s_ac) * utils::sign(desired_distance);
+        velocity_to_set = half_dist_velocity;
     }
 
-    return {velocity_to_set, s_ac};
+    const auto s_ac = pow<Unit>(velocity_to_set, 2) / (2 * acceleration);
+    const auto s_at_max_speed = velocity_to_set == max_speed ? fabs<Unit>(desired_distance) - 2 * s_ac : 0;
+    const auto t_before_break = velocity_to_set / acceleration + s_at_max_speed / max_speed;
+
+    return {velocity_to_set * sign(desired_distance), s_ac, t_before_break.to_double()};
 }
 
 } // end of namespace utils

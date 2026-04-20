@@ -46,6 +46,28 @@ class Radian
         return *this;
     }
 
+    constexpr friend Radian operator/(Radian lhv, const Radian &rhv)
+    {
+        return lhv._value / rhv._value;
+    }
+
+    constexpr Radian &operator/=(const Radian &rhv)
+    {
+        _value /= rhv._value;
+        return *this;
+    }
+
+    constexpr friend Radian operator*(Radian lhv, const Radian &rhv)
+    {
+        return lhv._value * rhv._value;
+    }
+
+    constexpr Radian &operator*=(const Radian &rhv)
+    {
+        _value *= rhv._value;
+        return *this;
+    }
+
     constexpr bool operator==(const Radian &rhv) const noexcept
     {
         return _value == rhv._value;

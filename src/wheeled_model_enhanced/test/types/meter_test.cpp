@@ -44,6 +44,6 @@ TEST(types, meter)
     }
     // double operator*(const double & lhv, const Meter & rhv)
     {
-        EXPECT_FLOAT_EQ(-0.25, 2.f * Meter(-0.125));
+        EXPECT_FLOAT_EQ(-0.25, (2.f * Meter(-0.125)).to_double());
     }
 }

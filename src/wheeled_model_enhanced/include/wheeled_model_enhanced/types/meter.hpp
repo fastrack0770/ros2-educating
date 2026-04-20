@@ -115,7 +115,7 @@ class Meter
         return !(*this >= rhv);
     }
 
-    constexpr friend double operator*(const double &lhv, const Meter &rhv)
+    constexpr friend Meter operator*(const double &lhv, const Meter &rhv)
     {
         return lhv * rhv._value;
     }

@@ -1171,10 +1171,10 @@
       <right_joint>right_back_wheel_joint</right_joint>
       <wheel_separation>1.1</wheel_separation>
       <wheel_radius>0.2</wheel_radius>
-      <max_linear_acceleration>1</max_linear_acceleration>
-      <min_linear_acceleration>-1</min_linear_acceleration>
-      <max_angular_acceleration>2</max_angular_acceleration>
-      <min_angular_acceleration>-2</min_angular_acceleration>
+      <max_linear_acceleration>2</max_linear_acceleration>
+      <min_linear_acceleration>-2</min_linear_acceleration>
+      <max_angular_acceleration>1</max_angular_acceleration>
+      <min_angular_acceleration>-1</min_angular_acceleration>
       <max_linear_velocity>10</max_linear_velocity>
       <min_linear_velocity>-10</min_linear_velocity>
       <max_angular_velocity>1</max_angular_velocity>

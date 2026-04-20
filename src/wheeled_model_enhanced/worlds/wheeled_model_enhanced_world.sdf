@@ -38,7 +38,7 @@
             </uri>
         </include>
         <include>
-            <pose>0 0 0.5 0 0 0</pose>
+            <pose>0 0 2 0 0 0</pose>
             <uri>
                 wheeled_model_enhanced
             </uri>

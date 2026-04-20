@@ -131,6 +131,8 @@ class IntegrationTestNode : public rclcpp::Node
     {
         if (not _goal_queue.empty())
         {
+            rclcpp::sleep_for(std::chrono::seconds(1)); // to be sure that the previous goal was proceeded
+
             auto goal = _goal_queue.front();
             go_to_goal(goal);
 
@@ -195,9 +197,8 @@ class IntegrationTestNode : public rclcpp::Node
         {
             const auto result = result_queue.front();
             const auto result_str = to_xml_result(result.code);
-            tests << "    <testcase name=\"Goal " << result.goal << "\" status=\"run\" result=\""
-                  << result_str << "\" time=\""
-                  << (result.elapsed_time == -1 ? "0" : std::to_string(result.elapsed_time))
+            tests << "    <testcase name=\"Goal " << result.goal << "\" status=\"run\" result=\"" << result_str
+                  << "\" time=\"" << (result.elapsed_time == -1 ? "0" : std::to_string(result.elapsed_time))
                   << "\" "
                      "timestamp=\""
                   << time_point_to_string(result.timestamp) << "\" classname=\"integration_test\" />" << std::endl;
@@ -248,6 +249,8 @@ class IntegrationTestNode : public rclcpp::Node
                 RCLCPP_INFO_STREAM(get_logger(), "Goal was rejected");
 
                 _result_queue.push({goal_msg, ResultCode::REJECTED, -1, now});
+
+                prompt_user_for_goal();
             }
             else
             {

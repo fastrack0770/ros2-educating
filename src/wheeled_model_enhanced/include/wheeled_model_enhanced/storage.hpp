@@ -41,10 +41,10 @@ class Storage
     void set_odometry(const nav_msgs::msg::Odometry &new_data);
 
     Optional<double> angular_speed() const noexcept;
-    Optional<bool> has_angular_speed() const noexcept;
+    bool has_angular_speed() const noexcept;
 
     Optional<double> linear_speed() const noexcept;
-    Optional<bool> has_linear_speed() const noexcept;
+    bool has_linear_speed() const noexcept;
 
     /**
      * angular_acceleration
@@ -87,9 +87,9 @@ class Storage
     PosExtended _waypoint_pos;
 
     Optional<sensor_msgs::msg::Imu> _imu;
-    Radian _angle_to_waypoint {0.f};
+    Radian _angle_to_waypoint{0.f};
 
-    Radian _robot_imu_twist {0};
+    Radian _robot_imu_twist{0};
     Meter _robot_length = 0;
 
     Optional<nav_msgs::msg::Odometry> _odometry;
